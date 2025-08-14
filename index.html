@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>EscapeRealm</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+    <h2>Login to EscapeRealm</h2>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button id="login-btn">Login</button>
+    <p id="login-message"></p>
+</div>
+
+<!-- Game Canvas -->
+<div id="game-container" style="display:none;"></div>
+
+<script src="game.js"></script>
+<script>
+    const loginBtn = document.getElementById("login-btn");
+    const loginScreen = document.getElementById("login-screen");
+    const gameContainer = document.getElementById("game-container");
+    const loginMessage = document.getElementById("login-message");
+
+    loginBtn.addEventListener("click", () => {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!username || !password) {
+            loginMessage.textContent = "Please fill in both fields.";
+            return;
+        }
+
+        // Check if user exists
+        const storedPassword = localStorage.getItem(`user_${username}`);
+
+        if (storedPassword) {
+            // Existing user - check password
+            if (storedPassword === password) {
+                startGame(username);
+            } else {
+                loginMessage.textContent = "Incorrect password.";
+            }
+        } else {
+            // New user - save credentials
+            localStorage.setItem(`user_${username}`, password);
+            startGame(username);
+        }
+    });
+
+    function startGame(username) {
+        loginScreen.style.display = "none";
+        gameContainer.style.display = "block";
+
+        // Pass username to Phaser game
+        window.playerName = username;
+
+        // Start Phaser game from game.js
+        initPhaserGame();
+    }
+</script>
+
+</body>
+</html>
