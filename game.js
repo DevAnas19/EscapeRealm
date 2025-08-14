@@ -32,7 +32,7 @@ function initPhaserGame() {
 }
 
 function preload() {
-    // Load assets here later
+    // Load assets here later (key, door, etc.)
 }
 
 function create() {
@@ -74,9 +74,48 @@ function create() {
     // Collider between player and all platforms
     this.physics.add.collider(this.player, this.platforms);
 
-
     // Collider between player and ground
     this.physics.add.collider(this.player, this.ground);
+
+    // === STEP 5: KEY & DOOR SYSTEM ===
+
+    // Track whether player has collected the key
+    this.hasKey = false;
+
+    // Create a key object (placeholder yellow square)
+    this.key = this.add.rectangle(400, 250, 30, 30, 0xf1c40f);
+    this.physics.add.existing(this.key);
+    this.key.body.setAllowGravity(false); // Key shouldn't fall
+
+    // UI key icon in top-left (hidden until collected)
+    this.keyIcon = this.add.rectangle(60, 110, 30, 30, 0xf1c40f);
+    this.keyIcon.setVisible(false); // Hidden at start
+    this.keyIcon.setScrollFactor(0); // Stays in place if camera moves
+
+    // Create a door object (placeholder blue rectangle)
+    this.door = this.add.rectangle(900, groundY - 60, 50, 80, 0x2980b9);//60 means how above the door will be form ground 50,80 is hight and width
+    this.physics.add.existing(this.door);
+    this.door.body.setAllowGravity(false);
+    this.door.body.setImmovable(true);
+
+    // When player overlaps with key, collect it
+    this.physics.add.overlap(this.player, this.key, () => {
+        this.key.destroy(); // Remove key from level
+        this.hasKey = true; // Player now has key
+        this.keyIcon.setVisible(true); // Show icon in UI
+    });
+
+    // When player overlaps with door, check win condition
+    this.physics.add.overlap(this.player, this.door, () => {
+        if (this.hasKey) {
+            this.add.text(this.scale.width / 2 - 100, this.scale.height / 2, 'Level Complete!', {
+                fontSize: '48px',
+                fill: '#2ecc71'
+            }).setScrollFactor(0);
+            this.player.body.setVelocity(0, 0);
+            this.player.body.moves = false; // Stop movement after winning
+        }
+    });
 
     // === CONTROLS ===
     this.cursors = this.input.keyboard.createCursorKeys(); // Arrow keys
