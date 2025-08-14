@@ -12,7 +12,7 @@ function initPhaserGame() {
         physics: {
             default: 'arcade',// Uses Arcade Physics, which is a lightweight physics system for 2D platformers, collisions, etc.
             arcade: {
-                gravity: { y: 500 },
+                gravity: { y: 500 },//garvity to pull down character
                 debug: false
             }//Adds gravity pulling down with a strength of 300.
         },
@@ -55,6 +55,25 @@ function create() {
     this.physics.add.existing(this.ground);
     this.ground.body.setAllowGravity(false); // Ground shouldn't fall
     this.ground.body.setImmovable(true); // Ground shouldn't move when hit
+
+    // === PLATFORMS GROUP ===
+    this.platforms = this.physics.add.staticGroup();
+
+    // Function to create a rectangle platform
+    const addPlatform = (x, y, width, height, color) => {
+        let platform = this.add.rectangle(x, y, width, height, color);
+        this.physics.add.existing(platform, true); // 'true' makes it static
+        this.platforms.add(platform);
+    };
+
+    // Ground is already there — now add floating platforms
+    addPlatform(400, 500, 200, 20, 0x8e44ad); // Purple platform
+    addPlatform(700, 400, 200, 20, 0x3498db); // Blue platform
+    addPlatform(400, 300, 200, 20, 0xe67e22); // Orange platform
+
+    // Collider between player and all platforms
+    this.physics.add.collider(this.player, this.platforms);
+
 
     // Collider between player and ground
     this.physics.add.collider(this.player, this.ground);
