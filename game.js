@@ -102,6 +102,13 @@ function create() {
     this.box.body.setDragX(700); // Friction
     this.box.body.setMass(2); // Heavier than player
 
+    // === MOVING PLATFORM (ORANGE) ===
+    this.movingPlatform = this.add.rectangle(400, 400, 200, 20, 0xe67e22); // Orange
+    this.physics.add.existing(this.movingPlatform); // Dynamic body
+    this.movingPlatform.body.setImmovable(true);
+    this.movingPlatform.body.setAllowGravity(false);
+    this.movingPlatform.body.setVelocityX(100); // Move initially to right
+
     // === BRIDGE over gap (initially hidden) ===
     this.bridge = this.add.rectangle(
         gapStartX + gapWidth / 2, // center of gap
@@ -118,14 +125,15 @@ function create() {
     this.physics.add.collider(this.player, this.groundLeft);  // Player stands on left ground
     this.physics.add.collider(this.player, this.groundRight); // Player stands on right ground
     this.physics.add.collider(this.player, this.platforms);   // Player on floating platforms
+    this.physics.add.collider(this.player, this.movingPlatform); // Player on moving platform
     this.physics.add.collider(this.box, this.groundLeft);     // Box rests on left ground
     this.physics.add.collider(this.box, this.groundRight);    // Box rests on right ground
     this.physics.add.collider(this.box, this.platforms);      // Box on floating platforms
+    this.physics.add.collider(this.box, this.movingPlatform); // Box on moving platform
     this.physics.add.collider(this.player, this.box);         // Player can push box
     // Bridge collider
     this.physics.add.collider(this.player, this.bridge); // Player can walk on bridge
     this.physics.add.collider(this.box, this.bridge);    // Box can sit on bridge
-
 
     // === FALL DETECTOR ===
     this.fallDetector = this.add.rectangle(
@@ -142,9 +150,8 @@ function create() {
     this.physics.add.overlap(this.box, this.fallDetector, () => { this.scene.restart(); });
 
     // === FLOATING PLATFORMS ===
-    addPlatform(200, 500, 200, 20, 0x8e44ad); // Purple platform
+    addPlatform(200, 510, 200, 20, 0x8e44ad); // Purple platform
     addPlatform(200, 300, 200, 20, 0x3498db); // Blue platform
-    addPlatform(400, 400, 200, 20, 0xe67e22); // Orange platform
 
     // === KEY & DOOR SYSTEM ===
     this.hasKey = false; // Player starts without key
@@ -212,39 +219,44 @@ function create() {
         this.player.body.setVelocityX(speed);
     }
 
-    // Jump only if player is on the ground
-    const isGrounded = this.player.body.blocked.down;
-    if ((this.cursors.up.isDown || this.keys.W.isDown || this.keys.SPACE.isDown) && isGrounded) {
+    // Jump if on floor/platform
+    if ((this.cursors.up.isDown || this.keys.W.isDown || this.keys.SPACE.isDown) && this.player.body.blocked.down) {
         this.player.body.setVelocityY(jumpSpeed);
     }
 
+    // === MOVING PLATFORM LOGIC ===
+    // Reverse direction at edges
+    if (this.movingPlatform.x >= 550) {
+        this.movingPlatform.body.setVelocityX(-75);
+    } else if (this.movingPlatform.x <= 400) {
+        this.movingPlatform.body.setVelocityX(75);
+    }
+
     // === SWITCH LOGIC ===
-    const isPlayerOnSwitch = Phaser.Geom.Intersects.RectangleToRectangle(
-        this.player.getBounds(),
-        this.switch.getBounds()
-    );
+    // Check if player or box is on the switch
+    const switchTop = this.switch.y - this.switch.height / 2;
+    const switchBottom = this.switch.y + this.switch.height / 2;
+    const switchLeft = this.switch.x - this.switch.width / 2;
+    const switchRight = this.switch.x + this.switch.width / 2;
 
-    const isBoxOnSwitch = Phaser.Geom.Intersects.RectangleToRectangle(
-        this.box.getBounds(),
-        this.switch.getBounds()
-    );
+    const isPlayerOnSwitch = this.player.x > switchLeft && this.player.x < switchRight &&
+                             this.player.y + this.player.height / 2 >= switchTop &&
+                             this.player.y + this.player.height / 2 <= switchBottom + 5;
 
-    // Activate switch if player or box is standing on it
-    if ((isPlayerOnSwitch || isBoxOnSwitch) && !this.switch.isActive) {
-        this.switch.isActive = true;        // Switch is now ON
-        this.switch.fillColor = 0x27ae60;   // Change switch color to green
+    const isBoxOnSwitch = this.box.x > switchLeft && this.box.x < switchRight &&
+                          this.box.y + this.box.height / 2 >= switchTop &&
+                          this.box.y + this.box.height / 2 <= switchBottom + 5;
 
-        // Reveal bridge over the gap
-        this.bridge.visible = true;         // Show bridge
-        this.bridge.body.enable = true;     // Enable collision
+    if (isPlayerOnSwitch || isBoxOnSwitch) {
+        this.switch.fillColor = 0x2ecc71; // Green when ON
+        this.bridge.visible = true;
+        this.bridge.body.enable = true; // Activate bridge
+    } else {
+        this.switch.fillColor = 0x7f8c8d; // Gray when OFF
+        this.bridge.visible = false;
+        this.bridge.body.enable = false; // Disable bridge
     }
-
-    // Optional: reset switch if neither player nor box is on it
-    if (!isPlayerOnSwitch && !isBoxOnSwitch && this.switch.isActive) {
-        this.switch.isActive = false;       // Switch is now OFF
-        this.switch.fillColor = 0x7f8c8d;  // Gray again
-        this.bridge.visible = false;        // Hide bridge
-        this.bridge.body.enable = false;    // Disable collision
-    }
-
 }
+
+// === START THE GAME ===
+initPhaserGame();
