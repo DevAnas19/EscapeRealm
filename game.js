@@ -103,11 +103,13 @@ function create() {
     this.box.body.setMass(2); // Heavier than player
 
     // === MOVING PLATFORM (ORANGE) ===
-    this.movingPlatform = this.add.rectangle(400, 400, 200, 20, 0xe67e22); // Orange
-    this.physics.add.existing(this.movingPlatform); // Dynamic body
-    this.movingPlatform.body.setImmovable(true);
-    this.movingPlatform.body.setAllowGravity(false);
-    this.movingPlatform.body.setVelocityX(100); // Move initially to right
+    this.movingPlatform1 = this.add.rectangle(400, 400, 200, 20, 0xe67e22); // Orange
+    this.physics.add.existing(this.movingPlatform1); // Dynamic body
+    this.movingPlatform1.body.setImmovable(true);
+    this.movingPlatform1.body.setAllowGravity(false);
+    this.movingPlatform1.body.setVelocityX(100); // Move initially to right
+
+    
 
     // === BRIDGE over gap (initially hidden) ===
     this.bridge = this.add.rectangle(
@@ -125,11 +127,11 @@ function create() {
     this.physics.add.collider(this.player, this.groundLeft);  // Player stands on left ground
     this.physics.add.collider(this.player, this.groundRight); // Player stands on right ground
     this.physics.add.collider(this.player, this.platforms);   // Player on floating platforms
-    this.physics.add.collider(this.player, this.movingPlatform); // Player on moving platform
+    this.physics.add.collider(this.player, this.movingPlatform1); // Player on moving platform
     this.physics.add.collider(this.box, this.groundLeft);     // Box rests on left ground
     this.physics.add.collider(this.box, this.groundRight);    // Box rests on right ground
     this.physics.add.collider(this.box, this.platforms);      // Box on floating platforms
-    this.physics.add.collider(this.box, this.movingPlatform); // Box on moving platform
+    this.physics.add.collider(this.box, this.movingPlatform1); // Box on moving platform
     this.physics.add.collider(this.player, this.box);         // Player can push box
     // Bridge collider
     this.physics.add.collider(this.player, this.bridge); // Player can walk on bridge
@@ -226,10 +228,10 @@ function create() {
 
     // === MOVING PLATFORM LOGIC ===
     // Reverse direction at edges
-    if (this.movingPlatform.x >= 550) {
-        this.movingPlatform.body.setVelocityX(-75);
-    } else if (this.movingPlatform.x <= 400) {
-        this.movingPlatform.body.setVelocityX(75);
+    if (this.movingPlatform1.x >= 550) {
+        this.movingPlatform1.body.setVelocityX(-75);
+    } else if (this.movingPlatform1.x <= 400) {
+        this.movingPlatform1.body.setVelocityX(75);
     }
 
     // === SWITCH LOGIC ===
