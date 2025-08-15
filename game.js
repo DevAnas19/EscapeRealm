@@ -102,14 +102,19 @@ function create() {
     this.box.body.setDragX(700); // Friction
     this.box.body.setMass(2); // Heavier than player
 
-    // === MOVING PLATFORM (ORANGE) ===
+    // === MOVING PLATFORM 1 (ORANGE) ===
     this.movingPlatform1 = this.add.rectangle(400, 400, 200, 20, 0xe67e22); // Orange
     this.physics.add.existing(this.movingPlatform1); // Dynamic body
     this.movingPlatform1.body.setImmovable(true);
     this.movingPlatform1.body.setAllowGravity(false);
     this.movingPlatform1.body.setVelocityX(100); // Move initially to right
 
-    
+    // === VERTICAL MOVING PLATFORM ===
+    this.verticalPlatform = this.add.rectangle(800, 300, 200, 20, 0x27ae60); // Green platform
+    this.physics.add.existing(this.verticalPlatform); // Dynamic body
+    this.verticalPlatform.body.setImmovable(true);
+    this.verticalPlatform.body.setAllowGravity(false);
+    this.verticalPlatform.body.setVelocityY(75); // Move initially down
 
     // === BRIDGE over gap (initially hidden) ===
     this.bridge = this.add.rectangle(
@@ -133,6 +138,8 @@ function create() {
     this.physics.add.collider(this.box, this.platforms);      // Box on floating platforms
     this.physics.add.collider(this.box, this.movingPlatform1); // Box on moving platform
     this.physics.add.collider(this.player, this.box);         // Player can push box
+    this.physics.add.collider(this.player, this.verticalPlatform); // Player can stand on it
+    this.physics.add.collider(this.box, this.verticalPlatform);    // Box can sit on it
     // Bridge collider
     this.physics.add.collider(this.player, this.bridge); // Player can walk on bridge
     this.physics.add.collider(this.box, this.bridge);    // Box can sit on bridge
@@ -232,6 +239,13 @@ function create() {
         this.movingPlatform1.body.setVelocityX(-75);
     } else if (this.movingPlatform1.x <= 400) {
         this.movingPlatform1.body.setVelocityX(75);
+    }
+
+    // === VERTICAL PLATFORM LOGIC ===
+    if (this.verticalPlatform.y >= 400) {     // bottom limit
+        this.verticalPlatform.body.setVelocityY(-75); // move up
+    } else if (this.verticalPlatform.y <= 250) { // top limit
+        this.verticalPlatform.body.setVelocityY(75);  // move down
     }
 
     // === SWITCH LOGIC ===
