@@ -88,10 +88,9 @@ function create() {
 
     // === PUSHABLE BOX ===
     const boxHeight = 50; // Box size
-    // Position box on top of ground
     this.box = this.add.rectangle(
         400,
-        groundY - 200, // Align center of box with ground
+        groundY - 200, // Spawn above ground
         50,
         boxHeight,
         0x964B00 // Brown
@@ -99,10 +98,10 @@ function create() {
     this.physics.add.existing(this.box); // Physics enabled
     this.box.body.setCollideWorldBounds(true); // Stay in bounds
     this.box.body.setBounce(0); // No bounce
-    this.box.body.setDragX(700); // Friction
+    this.box.body.setDragX(700); // Friction effect when sliding
     this.box.body.setMass(2); // Heavier than player
 
-    // === MOVING PLATFORM 1 (ORANGE) ===
+    // === MOVING PLATFORM 1 (HORIZONTAL ORANGE) ===
     this.movingPlatform1 = this.add.rectangle(400, 400, 200, 20, 0xe67e22); // Orange
     this.physics.add.existing(this.movingPlatform1); // Dynamic body
     this.movingPlatform1.body.setImmovable(true);
@@ -128,21 +127,36 @@ function create() {
     this.bridge.visible = false; // hide initially
     this.bridge.body.enable = false; // disable collisions initially
 
+    // === TIMER ===
+    this.startTime = this.time.now; // Save starting time
+    this.elapsedText = this.add.text(this.scale.width / 2, 30, '0.0s', {
+        fontSize: '28px',
+        fill: '#000'
+    }).setOrigin(0.5, 0); // Center align
+    this.elapsedText.setScrollFactor(0); // Stay fixed on screen
+    this.timerRunning = true; // Timer active
+
+    // === STAR SCORING SYSTEM ===
+    this.starsText = this.add.text(this.scale.width / 2, 70, '', {
+        fontSize: '28px',
+        fill: '#FFD700' // Gold color
+    }).setOrigin(0.5, 0);
+    this.starsText.setScrollFactor(0); // Stay fixed on screen
+
     // === COLLIDERS ===
-    this.physics.add.collider(this.player, this.groundLeft);  // Player stands on left ground
-    this.physics.add.collider(this.player, this.groundRight); // Player stands on right ground
-    this.physics.add.collider(this.player, this.platforms);   // Player on floating platforms
-    this.physics.add.collider(this.player, this.movingPlatform1); // Player on moving platform
-    this.physics.add.collider(this.box, this.groundLeft);     // Box rests on left ground
-    this.physics.add.collider(this.box, this.groundRight);    // Box rests on right ground
-    this.physics.add.collider(this.box, this.platforms);      // Box on floating platforms
-    this.physics.add.collider(this.box, this.movingPlatform1); // Box on moving platform
-    this.physics.add.collider(this.player, this.box);         // Player can push box
-    this.physics.add.collider(this.player, this.verticalPlatform); // Player can stand on it
-    this.physics.add.collider(this.box, this.verticalPlatform);    // Box can sit on it
-    // Bridge collider
-    this.physics.add.collider(this.player, this.bridge); // Player can walk on bridge
-    this.physics.add.collider(this.box, this.bridge);    // Box can sit on bridge
+    this.physics.add.collider(this.player, this.groundLeft);  
+    this.physics.add.collider(this.player, this.groundRight);
+    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.player, this.movingPlatform1);
+    this.physics.add.collider(this.box, this.groundLeft);
+    this.physics.add.collider(this.box, this.groundRight);
+    this.physics.add.collider(this.box, this.platforms);
+    this.physics.add.collider(this.box, this.movingPlatform1);
+    this.physics.add.collider(this.player, this.box);
+    this.physics.add.collider(this.player, this.verticalPlatform);
+    this.physics.add.collider(this.box, this.verticalPlatform);
+    this.physics.add.collider(this.player, this.bridge);
+    this.physics.add.collider(this.box, this.bridge);
 
     // === FALL DETECTOR ===
     this.fallDetector = this.add.rectangle(
@@ -193,25 +207,84 @@ function create() {
         this.keyIcon.setVisible(true); // Show key icon
     });
 
-    // Open door
+    // === OPEN DOOR (LEVEL COMPLETE) ===
     this.physics.add.overlap(this.player, this.door, () => {
         if (this.hasKey) {
-            this.add.text(this.scale.width / 2 - 100, this.scale.height / 2, 'Level Complete!', {
-                fontSize: '48px',
+            // Stop player movement when door reached
+            this.player.body.setVelocity(0, 0); 
+            this.player.body.moves = false;     
+            this.timerRunning = false; // Stop the timer
+
+            // === CALCULATE ELAPSED TIME ===
+            let elapsed = (this.time.now - this.startTime) / 1000; // in seconds
+
+            // === STAR RATING SYSTEM ===
+            let starsEarned = 1; // default
+            if (elapsed < 90) {           // under 1 min 30 sec
+                starsEarned = 3;
+            } else if (elapsed < 150) {   // under 2 min 30 sec
+                starsEarned = 2;
+            }
+
+            // === COINS BASED ON STARS ===
+            let coinsEarned = 0;
+            if (starsEarned === 3) {
+                coinsEarned = 150;
+            } else if (starsEarned === 2) {
+                coinsEarned = 75;
+            } else {
+                coinsEarned = 50;
+            }
+
+            // === DISPLAY SCOREBOARD ===
+            // Semi-transparent background box
+            let scoreboardBg = this.add.rectangle(
+                this.scale.width / 2, 
+                this.scale.height / 2, 
+                400, 
+                250, 
+                0x000000, 
+                0.7
+            ).setOrigin(0.5);
+
+            // Title
+            this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, 'Level Complete!', {
+                fontSize: '40px',
                 fill: '#2ecc71'
-            }).setScrollFactor(0); // Show success text
-            this.player.body.setVelocity(0, 0); // Stop movement
-            this.player.body.moves = false;     // Freeze player
+            }).setOrigin(0.5);
+
+            // Show elapsed time
+            this.add.text(this.scale.width / 2, this.scale.height / 2 - 30, `Time: ${elapsed.toFixed(1)}s`, {
+                fontSize: '28px',
+                fill: '#fff'
+            }).setOrigin(0.5);
+
+            // === SHOW STARS EARNED ===
+            // Repeat the star symbol based on how many stars player earned
+            let starDisplay = '⭐'.repeat(starsEarned);
+
+            this.add.text(this.scale.width / 2, this.scale.height / 2 + 20, `Stars: ${starDisplay}`, {
+                fontSize: '28px',
+                fill: '#f1c40f'
+            }).setOrigin(0.5);
+
+
+            // Show coins earned
+            this.add.text(this.scale.width / 2, this.scale.height / 2 + 70, `Coins: ${coinsEarned}`, {
+                fontSize: '28px',
+                fill: '#f39c12'
+            }).setOrigin(0.5);
         }
     });
+
 
     // === PLAYER CONTROLS ===
     this.cursors = this.input.keyboard.createCursorKeys();        // Arrow keys
     this.keys = this.input.keyboard.addKeys('W,A,S,D,SPACE');     // WASD + SPACE
 }
 
-    // === GAME LOOP ===
-    function update() {
+// === GAME LOOP ===
+function update() {
     const speed = 250;      // Horizontal movement speed
     const jumpSpeed = -475; // Jump velocity (negative = up)
 
@@ -248,6 +321,12 @@ function create() {
         this.verticalPlatform.body.setVelocityY(75);  // move down
     }
 
+    // === TIMER UPDATE ===
+    if (this.timerRunning) {
+        let elapsed = (this.time.now - this.startTime) / 1000; // seconds
+        this.elapsedText.setText('' + elapsed.toFixed(1) + ''); // Update text
+    }
+
     // === SWITCH LOGIC ===
     // Check if player or box is on the switch
     const switchTop = this.switch.y - this.switch.height / 2;
@@ -255,14 +334,17 @@ function create() {
     const switchLeft = this.switch.x - this.switch.width / 2;
     const switchRight = this.switch.x + this.switch.width / 2;
 
+    // Conditions for player standing on switch
     const isPlayerOnSwitch = this.player.x > switchLeft && this.player.x < switchRight &&
                              this.player.y + this.player.height / 2 >= switchTop &&
                              this.player.y + this.player.height / 2 <= switchBottom + 5;
 
+    // Conditions for box on switch
     const isBoxOnSwitch = this.box.x > switchLeft && this.box.x < switchRight &&
                           this.box.y + this.box.height / 2 >= switchTop &&
                           this.box.y + this.box.height / 2 <= switchBottom + 5;
 
+    // Toggle bridge depending on switch state
     if (isPlayerOnSwitch || isBoxOnSwitch) {
         this.switch.fillColor = 0x2ecc71; // Green when ON
         this.bridge.visible = true;
