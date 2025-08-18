@@ -1,38 +1,92 @@
+/* Import pixel font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Reset */
 body {
-    background: #111;
-    color: white;
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    font-family: 'Press Start 2P', cursive;
+    background: #000; /* keep gameplay clean */
 }
 
+/* Fullscreen login screen with background */
 #login-screen {
-    width: 300px;
-    margin: 100px auto;
-    background: #222;
-    padding: 20px;
-    border-radius: 10px;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: url("assets/background.png") no-repeat center center fixed;
+    background-size: cover;
     text-align: center;
 }
 
-#login-screen input {
+/* Game Title */
+#game-title {
+    font-size: 60px;
+    color: #fff;
+    text-shadow: 3px 3px #000;
+    margin-bottom: 50px;
+}
+
+/* Orange Panel Box */
+.login-box {
+    background: rgba(229, 138, 43, 0.83); /* 0.8 = 80% opaque */
+    padding: 30px 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0px 5px 25px rgba(0, 0, 0, 0.6);
+    width: 360px;
+    margin-bottom: 80px;
+}
+
+/* Welcome Text */
+.login-box h2 {
+    font-size: 25px;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px #000;
+}
+
+/* Inputs */
+.login-box input {
     width: 90%;
-    padding: 8px;
+    padding: 14px;
     margin: 10px 0;
     border: none;
-    border-radius: 5px;
+    border-radius: 15px;
+    background: #5c3a1b;
+    color: #fff;
+    font-size: 12px;
+    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.6);
+    text-align: center;
 }
 
+/* Login Button */
 #login-btn {
-    padding: 8px 20px;
+    margin-top: 15px;
+    padding: 14px 20px;
+    width: 100%;
+    background: #3ec73a;
     border: none;
-    background: #28a745;
-    color: white;
-    border-radius: 5px;
+    border-radius: 15px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
     cursor: pointer;
+    transition: 0.3s ease;
+    text-shadow: 1px 1px #000;
 }
 
+#login-btn:hover {
+    background: #32a82c;
+    transform: scale(1.05);
+}
+
+/* Error message */
 #login-message {
-    color: #ff4444;
     margin-top: 10px;
+    font-size: 10px;
+    color: #ff4444;
 }

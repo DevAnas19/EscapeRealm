@@ -5,16 +5,23 @@
     <title>EscapeRealm</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+
+    <!-- Pixel Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- Login Screen -->
+<!-- Login Screen (with background + title) -->
 <div id="login-screen">
-    <h2>Login to EscapeRealm</h2>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button id="login-btn">Login</button>
-    <p id="login-message"></p>
+    <h1 id="game-title">EscapeREALM</h1>
+    <!-- Orange panel box -->
+    <div class="login-box">
+        <h2>WELCOME !!!</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button id="login-btn">LOG IN</button>
+        <p id="login-message"></p>
+    </div>
 </div>
 
 <!-- Game Canvas -->
@@ -54,7 +61,10 @@
     });
 
     function startGame(username) {
+        // Hide login screen (background + title + inputs all go away)
         loginScreen.style.display = "none";
+
+        // Show game canvas
         gameContainer.style.display = "block";
 
         // Pass username to Phaser game
