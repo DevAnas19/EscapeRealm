@@ -241,8 +241,8 @@ function create() {
             let scoreboardBg = this.add.rectangle(
                 this.scale.width / 2, 
                 this.scale.height / 2, 
-                400, 
-                250, 
+                450, 
+                300, 
                 0x000000, 
                 0.7
             ).setOrigin(0.5);
@@ -259,6 +259,8 @@ function create() {
                 fill: '#fff'
             }).setOrigin(0.5);
 
+            
+
             // === SHOW STARS EARNED ===
             // Repeat the star symbol based on how many stars player earned
             let starDisplay = '⭐'.repeat(starsEarned);
@@ -274,8 +276,52 @@ function create() {
                 fontSize: '28px',
                 fill: '#f39c12'
             }).setOrigin(0.5);
+
+            // Home Button (no functionality yet)
+            let homeBtn = this.add.text(this.scale.width / 2 - 100, this.scale.height / 2 + 110, 'Home', {
+                fontSize: '24px',
+                fill: '#fff',
+                backgroundColor: '#3498db',
+                padding: { left: 10, right: 10, top: 5, bottom: 5 }
+            }).setOrigin(0.5).setInteractive();
+
+            // Restart Button
+            let restartBtn = this.add.text(this.scale.width / 2 + 100, this.scale.height / 2 + 110, '⟳', {
+                fontSize: '24px',
+                fill: '#fff',
+                backgroundColor: '#e74c3c',
+                padding: { left: 10, right: 10, top: 5, bottom: 5 }
+            }).setOrigin(0.5).setInteractive();
+
+            restartBtn.on('pointerdown', () => {
+                this.scene.restart();
+            });
         }
     });
+
+    // === UI BUTTONS ===
+
+    // Restart Button
+    this.restartButton = this.add.text(this.scale.width - 150, 30, '⟳', {
+        fontSize: '24px',
+        fill: '#fff',
+        backgroundColor: '#e74c3c', // Red background
+        padding: { left: 10, right: 10, top: 5, bottom: 5 }
+    }).setOrigin(0, 0).setInteractive();
+
+    // On click -> restart the scene
+    this.restartButton.on('pointerdown', () => {
+        this.scene.restart();
+    });
+
+    // Home Button (no functionality yet)
+    this.homeButton = this.add.text(this.scale.width - 300, 30, 'Home', {
+        fontSize: '24px',
+        fill: '#fff',
+        backgroundColor: '#3498db', // Blue background
+        padding: { left: 10, right: 10, top: 5, bottom: 5 }
+    }).setOrigin(0, 0).setInteractive();
+
 
 
     // === PLAYER CONTROLS ===
