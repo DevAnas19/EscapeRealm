@@ -78,7 +78,7 @@ class GameplayScene extends Phaser.Scene {
     const boxHeight = 50; // Box size
     this.box = this.add.rectangle(
         400,
-        groundY - 200, // Spawn above ground
+        350, // Spawn above ground
         50,
         boxHeight,
         0x964B00 // Brown
@@ -389,4 +389,5 @@ class GameplayScene extends Phaser.Scene {
         this.bridge.body.enable = false; // Disable bridge
     }
     }
+
 }
