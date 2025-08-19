@@ -27,7 +27,10 @@
 <!-- Game Canvas -->
 <div id="game-container" style="display:none;"></div>
 
+<!-- Order matters: GameplayScene FIRST, then game.js -->
+<script src="scenes/GameplayScene.js"></script>
 <script src="game.js"></script>
+
 <script>
     const loginBtn = document.getElementById("login-btn");
     const loginScreen = document.getElementById("login-screen");
