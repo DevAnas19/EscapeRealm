@@ -17,7 +17,7 @@
     <!-- Orange panel box -->
     <div class="login-box">
         <h2>WELCOME !!!</h2>
-        <input type="text" id="username" placeholder="Username" required>
+        <input type="text" id="username" placeholder="In-Game Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <button id="login-btn">LOG IN</button>
         <p id="login-message"></p>
@@ -37,6 +37,7 @@
     const gameContainer = document.getElementById("game-container");
     const loginMessage = document.getElementById("login-message");
 
+    // === Handle Login Button Click ===
     loginBtn.addEventListener("click", async () => {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value.trim();
@@ -81,6 +82,7 @@
         }
     });
 
+    // === Start Game Function ===
     function startGame(username) {
         // Hide login screen (background + title + inputs all go away)
         loginScreen.style.display = "none";
@@ -94,8 +96,23 @@
         // Start Phaser game from game.js
         initPhaserGame();
     }
-</script>
 
+    // === Handle Logout Automatically ===
+    // When user closes tab, refreshes, or navigates away, mark them offline
+    window.addEventListener("beforeunload", async () => {
+        if (window.playerName) {
+            try {
+                await fetch("http://localhost:5000/logout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: window.playerName })
+                });
+            } catch (err) {
+                console.warn("Could not update logout status:", err);
+            }
+        }
+    });
+</script>
 
 </body>
 </html>
