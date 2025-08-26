@@ -37,8 +37,15 @@ app.post("/signup", async (req, res) => {
         return res.status(400).json({ message: "User already exists" });
     }
 
-    // insert new user
-    await usersCollection.insertOne({ username, password });
+    // insert new user with default status offline
+    await usersCollection.insertOne({
+        username,
+        password,
+        status: "offline", // default status when first created
+        lastLogin: null,   // no login yet
+        loginHistory: []   // empty login history
+    });
+
     res.status(201).json({ message: "User created successfully" });
 });
 
@@ -56,7 +63,39 @@ app.post("/login", async (req, res) => {
         return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    const now = new Date();
+
+    // update user status and add login record
+    await usersCollection.updateOne(
+        { username },
+        {
+            $set: { lastLogin: now, status: "online" }, // mark user online
+            $push: { loginHistory: { date: now, status: "online" } } // keep track of logins
+        }
+    );
+
     res.json({ message: "Login successful" });
+});
+
+// === Logout API ===
+app.post("/logout", async (req, res) => {
+    const { username } = req.body;
+    if (!username) {
+        return res.status(400).json({ message: "Missing username" });
+    }
+
+    const now = new Date();
+
+    // set user offline and log it
+    await usersCollection.updateOne(
+        { username },
+        {
+            $set: { status: "offline" },
+            $push: { loginHistory: { date: now, status: "offline" } }
+        }
+    );
+
+    res.json({ message: "User is now offline" });
 });
 
 // === Start Server ===
