@@ -2,7 +2,12 @@
 // This file is responsible for creating the Phaser game instance.
 // It references external scene files like GameplayScene.js
 
-function initPhaserGame() {
+// ✅ Import external scenes
+import HomeScene from './scenes/HomeScene.js';
+import GameplayScene from './scenes/GameplayScene.js';
+
+// ✅ Accept username as parameter from index.html
+function initPhaserGame(username) {
     // === GAME CONFIGURATION ===
     const config = {
         type: Phaser.AUTO, // Automatically choose WebGL or Canvas (best option for browser)
@@ -22,7 +27,7 @@ function initPhaserGame() {
         // === SCENES ===
         // Instead of inline preload/create/update, we now reference external Scene files
         // Example: GameplayScene.js will define preload(), create(), update()
-        scene: [GameplayScene],
+        scene: [HomeScene, GameplayScene],
 
         scale: {
             mode: Phaser.Scale.RESIZE,        // Resize canvas to fit window
@@ -32,4 +37,12 @@ function initPhaserGame() {
 
     // === CREATE GAME INSTANCE ===
     const game = new Phaser.Game(config);
+
+    // ✅ Save username into registry immediately (so HomeScene can use it right away)
+    game.registry.set("username", username || "Guest");
+
+    return game; // ✅ return so index.html can keep a reference
 }
+
+// ✅ Expose globally so index.html can call it with username
+window.initPhaserGame = initPhaserGame;

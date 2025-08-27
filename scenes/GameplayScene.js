@@ -1,4 +1,4 @@
-class GameplayScene extends Phaser.Scene {
+export default class GameplayScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameplayScene" });
 
@@ -22,6 +22,7 @@ class GameplayScene extends Phaser.Scene {
     // For now, we are using colored rectangles
     }
 
+    
     // === CREATE OBJECTS ===
     create() {
          // === WELCOME MESSAGE ===
@@ -271,7 +272,11 @@ class GameplayScene extends Phaser.Scene {
                 fill: '#fff',
                 backgroundColor: '#3498db',
                 padding: { left: 10, right: 10, top: 5, bottom: 5 }
-            }).setOrigin(0.5).setInteractive();
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            // ✅ On click → Go back to HomeScene
+                homeBtn.on('pointerdown', () => {
+                this.scene.start('HomeScene'); // switch back to menu
+            });
 
             // Restart Button
             let restartBtn = this.add.text(this.scale.width / 2 + 100, this.scale.height / 2 + 110, '⟳', {
@@ -308,7 +313,11 @@ class GameplayScene extends Phaser.Scene {
         fill: '#fff',
         backgroundColor: '#3498db', // Blue background
         padding: { left: 10, right: 10, top: 5, bottom: 5 }
-    }).setOrigin(0, 0).setInteractive();
+    }).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+    // ✅ On click → Go back to HomeScene
+    this.homeButton.on('pointerdown', () => {
+        this.scene.start('HomeScene'); // switch back to menu
+    });
 
 
 
