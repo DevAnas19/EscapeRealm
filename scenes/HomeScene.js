@@ -125,11 +125,25 @@ export default class HomeScene extends Phaser.Scene {
                 true         // ✅ autoResize enabled for long names
             );
 
-            // Right side → Coins, Shop, Settings
-            const menuButtons = ["COINS", "SHOP", "SETTINGS"];
+            // ✅ Get coin balance from registry
+            const playerCoins = this.registry.get("coins") || 0;
+
+            // === Coins box (moved OUTSIDE the loop so it shows only once) ===
+            createRoundedBox(
+                width * 0.75, height * 0.05,
+                130, 40,
+                10,
+                0xffffff,
+                0x000000,
+                `${playerCoins}`,  // ✅ display actual balance
+                14
+            );
+
+            // === Shop & Settings buttons (right side) ===
+            const menuButtons = ["SHOP", "SETTINGS"];
             menuButtons.forEach((btn, i) => {
                 createRoundedBox(
-                    width * 0.75 + i * 150, height * 0.05,
+                    width * 0.75 + (i + 1) * 150, height * 0.05, // ✅ shifted so Coins stays on left
                     130, 40,     // width, height
                     10,          // radius
                     0xffffff,    // white fill

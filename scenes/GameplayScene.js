@@ -225,6 +225,25 @@ export default class GameplayScene extends Phaser.Scene {
                 coinsEarned = 50;
             }
 
+            // === UPDATE COINS IN REGISTRY + DATABASE ===
+            let currentCoins = this.registry.get("coins") || 0;
+            let updatedCoins = currentCoins + coinsEarned;
+            this.registry.set("coins", updatedCoins);
+
+            // ✅ Save to database
+            const username = this.registry.get("username"); 
+            fetch("http://localhost:5000/update-coins", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, coins: updatedCoins })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Coins saved:", data);
+            })
+            .catch(err => console.error("Error saving coins:", err));
+
+
             // === DISPLAY SCOREBOARD ===
             // Semi-transparent background box
             let scoreboardBg = this.add.rectangle(
@@ -318,8 +337,7 @@ export default class GameplayScene extends Phaser.Scene {
     this.homeButton.on('pointerdown', () => {
         this.scene.start('HomeScene'); // switch back to menu
     });
-
-
+    
 
     // === PLAYER CONTROLS ===
     this.cursors = this.input.keyboard.createCursorKeys();        // Arrow keys

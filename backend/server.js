@@ -43,10 +43,12 @@ app.post("/signup", async (req, res) => {
         password,
         status: "offline", // default status when first created
         lastLogin: null,   // no login yet
-        loginHistory: []   // empty login history
+        loginHistory: [],  // empty login history
+        coins: 0           // ✅ initialize coins field with 0
     });
 
-    res.status(201).json({ message: "User created successfully" });
+    // ✅ also return coins + username so frontend can use immediately
+    res.status(201).json({ message: "User created successfully", username, coins: 0 });
 });
 
 // === Login API ===
@@ -74,7 +76,12 @@ app.post("/login", async (req, res) => {
         }
     );
 
-    res.json({ message: "Login successful" });
+    // ✅ return username + coins so frontend can display balance immediately
+    res.json({ 
+        message: "Login successful", 
+        username: user.username, 
+        coins: user.coins !== undefined ? user.coins : 0 // ✅ make sure coins always exist
+    });
 });
 
 // === Logout API ===
@@ -96,6 +103,44 @@ app.post("/logout", async (req, res) => {
     );
 
     res.json({ message: "User is now offline" });
+});
+
+// === Update Coins API ===
+// This will be called whenever player earns/spends coins in the game
+app.post("/update-coins", async (req, res) => {
+    const { username, coins } = req.body;
+
+    if (!username || coins === undefined) {
+        return res.status(400).json({ message: "Missing username or coins" });
+    }
+
+    // ✅ ensure coins is always stored as a number
+    const numericCoins = Number(coins);
+
+    // ✅ update user's coin balance in DB
+    const result = await usersCollection.updateOne(
+        { username },
+        { $set: { coins: numericCoins } }
+    );
+
+    if (result.matchedCount === 0) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "Coins updated successfully", username, coins: numericCoins });
+});
+
+// === Get Coins API ===
+// Useful if you want to fetch only coins (optional)
+app.get("/coins/:username", async (req, res) => {
+    const { username } = req.params;
+
+    const user = await usersCollection.findOne({ username });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ username, coins: user.coins !== undefined ? user.coins : 0 });
 });
 
 // === Start Server ===

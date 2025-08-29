@@ -58,7 +58,9 @@
             if (res.ok) {
                 const data = await res.json();
                 loginMessage.textContent = data.message;
-                startGame(username); // ✅ Start game with username
+
+                // ✅ Start game with username and coins received from backend
+                startGame(data.username, data.coins);
             } else {
                 // If login failed because user doesn't exist, signup instead
                 const signupRes = await fetch("http://localhost:5000/signup", {
@@ -70,7 +72,9 @@
                 if (signupRes.ok) {
                     const data = await signupRes.json();
                     loginMessage.textContent = "New account created! Logging in...";
-                    startGame(username); // ✅ Start game with username
+
+                    // ✅ After signup, user has 0 coins
+                    startGame(username, 0);
                 } else {
                     const err = await signupRes.json();
                     loginMessage.textContent = err.message;
@@ -83,7 +87,7 @@
     });
 
     // === Start Game Function ===
-    function startGame(username) {
+    function startGame(username, coins) {
         // Hide login screen (background + title + inputs all go away)
         loginScreen.style.display = "none";
 
@@ -93,13 +97,14 @@
         // ✅ Save username globally (accessible outside Phaser if needed)
         window.playerName = username;
 
-        // ✅ Initialize Phaser game instance
-        // (initPhaserGame is defined in game.js and returns the Phaser.Game object)
-        const game = initPhaserGame(); 
+        // ✅ Initialize Phaser game instance with username + coins
+        // initPhaserGame is defined in game.js and now accepts 2 params (username, coins)
+        const game = initPhaserGame(username, coins);
 
-        // ✅ Store username in Phaser's registry
-        // This allows any scene to access it with: this.registry.get("username")
+        // ⚡ No need to set registry again here because game.js already sets username + coins
+        // But keeping this line ensures registry stays updated just in case
         game.registry.set("username", username);
+        game.registry.set("coins", coins);
     }
 
     // === Handle Logout Automatically ===
@@ -117,7 +122,6 @@
             }
         }
     });
-    
 </script>
 
 </body>
