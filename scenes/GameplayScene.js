@@ -20,11 +20,28 @@ export default class GameplayScene extends Phaser.Scene {
         // Example: load images, spritesheets, audio
     // this.load.image('player', 'assets/player.png');
     // For now, we are using colored rectangles
+        this.load.image('background', 'assets/background.png');
     }
 
     
     // === CREATE OBJECTS ===
     create() {
+
+        // ... after this.player is created ...
+// ... after this.cameras.main.startFollow(this.player, true, 0.05, 0.05); ...
+
+
+        // === NEW: Define the size of our level ===
+            const levelWidth = 3000; // An example width, much larger than the screen
+            const levelHeight = this.scale.height; // Keep the height the same as the screen for now
+    // ... right after you define levelWidth and levelHeight ...
+
+// === NEW: Tell the physics engine about the larger world ===
+        this.physics.world.setBounds(0, 0, levelWidth, levelHeight);
+         // --- Add the background image ---
+        const { width, height } = this.scale;
+        this.add.image(width / 2, height / 2, 'background').setDisplaySize(width, height);
+
          // === WELCOME MESSAGE ===
     this.add.text(50, 50, `Welcome ${window.playerName}!`, {
         fontSize: '32px',
@@ -285,16 +302,17 @@ export default class GameplayScene extends Phaser.Scene {
                 fill: '#f39c12'
             }).setOrigin(0.5);
 
-            // Home Button (no functionality yet)
+            // Home Button
             let homeBtn = this.add.text(this.scale.width / 2 - 100, this.scale.height / 2 + 110, 'Home', {
                 fontSize: '24px',
                 fill: '#fff',
                 backgroundColor: '#3498db',
                 padding: { left: 10, right: 10, top: 5, bottom: 5 }
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-            // ✅ On click → Go back to HomeScene
-                homeBtn.on('pointerdown', () => {
-                this.scene.start('HomeScene'); // switch back to menu
+            
+            // --- FIX: The event listener is now correctly placed here ---
+            homeBtn.on('pointerdown', () => {
+                window.showMainMenuUI();
             });
 
             // Restart Button
@@ -326,18 +344,18 @@ export default class GameplayScene extends Phaser.Scene {
         this.scene.restart();
     });
 
-    // Home Button (no functionality yet)
+    // Home Button
     this.homeButton = this.add.text(this.scale.width - 300, 30, 'Home', {
         fontSize: '24px',
         fill: '#fff',
         backgroundColor: '#3498db', // Blue background
         padding: { left: 10, right: 10, top: 5, bottom: 5 }
     }).setOrigin(0, 0).setInteractive({ useHandCursor: true });
-    // ✅ On click → Go back to HomeScene
-    this.homeButton.on('pointerdown', () => {
-        this.scene.start('HomeScene'); // switch back to menu
-    });
     
+    // --- FIX: This now reloads the page to go back to the main HTML menu ---
+    this.homeButton.on('pointerdown', () => {
+        window.showMainMenuUI();
+    });
 
     // === PLAYER CONTROLS ===
     this.cursors = this.input.keyboard.createCursorKeys();        // Arrow keys
