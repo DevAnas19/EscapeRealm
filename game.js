@@ -1,55 +1,76 @@
 // === MAIN GAME INITIALIZATION ===
-// This file is responsible for creating the Phaser game instance.
-// It references external scene files like GameplayScene.js
+// This file creates the Phaser game instance and references GameplayScene.js.
 
-// ✅ Import external scenes
-import HomeScene from "./scenes/HomeScene.js";
+// ✅ Import your only active scene
 import GameplayScene from "./scenes/GameplayScene.js";
 
-// ✅ Accept username and coins as parameters from index.html
+// === TEMPORARY MENU / HOME SCENE ===
+// A lightweight scene that exists so Phaser can start properly.
+class MenuScene extends Phaser.Scene {
+  constructor() {
+    super("MenuScene");
+  }
+
+  create() {
+    const username = this.registry.get("username") || "Guest";
+    const coins = this.registry.get("coins") || 0;
+
+    console.log(`✅ MenuScene active for ${username} with ${coins} coins`);
+
+    // Optional: show a minimal message or background color
+    this.cameras.main.setBackgroundColor("#202030");
+
+    const text = this.add.text(
+      this.scale.width / 2,
+      this.scale.height / 2,
+      "EscapeRealm Ready!",
+      {
+        fontFamily: "Press Start 2P",
+        fontSize: "16px",
+        fill: "#ffffff",
+        align: "center",
+      }
+    ).setOrigin(0.5);
+
+    // Listen for resize
+    this.scale.on("resize", () => {
+      text.setPosition(this.scale.width / 2, this.scale.height / 2);
+    });
+  }
+}
+
+// === MAIN INITIALIZATION FUNCTION ===
 function initPhaserGame(username, coins = 0) {
-  // === GAME CONFIGURATION ===
   const config = {
-    type: Phaser.AUTO, // Automatically choose WebGL or Canvas (best option for browser)
+    type: Phaser.AUTO,
     transparent: true,
-    width: window.innerWidth, // Full browser width
-    height: window.innerHeight, // Full browser height
+    width: window.innerWidth,
+    height: window.innerHeight,
     parent: "game-container",
 
     physics: {
-      default: "arcade", // Arcade physics engine
+      default: "arcade",
       arcade: {
-        gravity: { y: 500 }, // Global downward gravity
-        debug: false, // Set true to see physics bodies
+        gravity: { y: 500 },
+        debug: false,
       },
     },
 
-    // === SCENES ===
-    // Instead of inline preload/create/update, we now reference external Scene files
-    // Example: GameplayScene.js will define preload(), create(), update()
-    scene: [HomeScene, GameplayScene],
-
+    scene: [GameplayScene], // ✅ Only these two
     scale: {
-      mode: Phaser.Scale.RESIZE, // Resize canvas to fit window
-      autoCenter: Phaser.Scale.CENTER_BOTH, // Center the game
+      mode: Phaser.Scale.RESIZE,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
     },
   };
 
-  // === CREATE GAME INSTANCE ===
   const game = new Phaser.Game(config);
 
-  // ✅ Save username into registry immediately (so HomeScene can use it right away)
+  // Store player data globally
   game.registry.set("username", username || "Guest");
-
-  // ✅ Save coins into registry (so HomeScene and GameplayScene can access/update it)
   game.registry.set("coins", coins);
 
-  // 🔑 Now both username and coins are accessible in any scene like:
-  // this.registry.get("username")
-  // this.registry.get("coins")
-
-  return game; // ✅ return so index.html can keep a reference
+  return game;
 }
 
-// ✅ Expose globally so index.html can call it with username + coins
+// ✅ Expose globally so index.html can call it
 window.initPhaserGame = initPhaserGame;

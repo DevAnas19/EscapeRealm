@@ -1,108 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>EscapeRealm</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <title>EscapeRealm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-<!-- LOGIN SCREEN RESTORED -->
-<div id="login-screen">
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
     <h1 id="game-title">EscapeREALM</h1>
     <div class="login-box">
-        <h2>WELCOME !!!</h2>
-        <input type="text" id="username" placeholder="In-Game Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button id="login-btn">LOG IN</button>
-        <p id="login-message"></p>
+      <h2>WELCOME !!!</h2>
+      <input type="text" id="username" placeholder="In-Game Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button id="login-btn">LOG IN</button>
+      <p id="login-message"></p>
     </div>
-</div>
+  </div>
 
-<!-- Game Canvas -->
-<div id="game-container" style="display:none;"></div>
+  <!-- GAME CONTAINER -->
+  <div id="game-container" style="display: none;"></div>
 
-<!-- Main UI Container -->
-<div id="ui-container" class="hidden">
-    <!-- Top Navigation Bar -->
+  <!-- UI CONTAINER -->
+  <div id="ui-container" class="hidden">
     <div class="top-bar">
-        <div class="player-info">
-            <span id="player-username">USERNAME</span>
-            <span id="player-coins">000 🪙</span>
-        </div>
-        <div class="nav-buttons">
-            <button id="shop-btn">SHOP</button>
-            <button id="about-btn">ABOUT US</button>
-            <button id="settings-btn">SETTINGS</button>
-        </div>
+      <div class="player-info">
+        <span id="player-username">USERNAME</span>
+        <span id="player-coins">000 🪙</span>
+      </div>
+      <div class="nav-buttons">
+        <button id="shop-btn">SHOP</button>
+        <button id="about-btn">ABOUT US</button>
+        <button id="settings-btn">SETTINGS</button>
+      </div>
     </div>
 
-    <!-- Main Content Panel -->
+    <!-- MAIN MENU -->
     <div id="main-menu" class="panel active">
-        <div class="panel-content">
-            <h1>Select Mode</h1>
-            <div class="mode-selection">
-                <button class="mode-button" data-mode="SINGLE PLAYER">SINGLE PLAYER</button>
-                <button class="mode-button" data-mode="AI CO-OP">AI CO-OP</button>
-                <button class="mode-button" data-mode="PLAYER VS AI">PLAYER VS AI</button>
-            </div>
+      <div class="panel-content">
+        <h1>Select Mode</h1>
+        <div class="mode-selection">
+          <button class="mode-button" data-mode="SINGLE PLAYER">SINGLE PLAYER</button>
+          <button class="mode-button" data-mode="AI CO-OP">AI CO-OP</button>
+          <button class="mode-button" data-mode="PLAYER VS AI">PLAYER VS AI</button>
         </div>
+      </div>
     </div>
 
-    <!-- Level Select Panel (hidden by default) -->
+    <!-- LEVEL SELECT -->
     <div id="level-select-panel" class="panel">
-        <div class="panel-content">
-            <button class="back-button">BACK</button>
-            <h1 id="level-select-title">SINGLE PLAYER</h1>
-            <div class="level-grid">
-                <button class="level-button">1</button>
-                <button class="level-button">2</button>
-                <button class="level-button">3</button>
-                <button class="level-button">4</button>
-                <button class="level-button">5</button>
-            </div>
+      <div class="panel-content">
+        <button class="back-button">BACK</button>
+        <h1 id="level-select-title">SINGLE PLAYER</h1>
+        <div class="level-grid">
+          <button class="level-button">1</button>
+          <button class="level-button">2</button>
+          <button class="level-button">3</button>
+          <button class="level-button">4</button>
+          <button class="level-button">5</button>
         </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Pop-up Modal System -->
-<div id="modal-overlay" class="hidden"></div>
-<div id="modal-container" class="hidden">
+  <!-- MODALS -->
+  <div id="modal-overlay" class="hidden"></div>
+  <div id="modal-container" class="hidden">
     <div id="shop-panel" class="panel">
-        <div class="panel-content">
-            <button class="back-button">BACK</button>
-            <h1>SHOP</h1>
-            <p>Skins and items will be here soon!</p>
-        </div>
+      <div class="panel-content">
+        <button class="back-button">BACK</button>
+        <h1>SHOP</h1>
+        <p>Skins and items will be here soon!</p>
+      </div>
     </div>
 
     <div id="about-panel" class="panel">
-        <div class="panel-content">
-            <button class="back-button">BACK</button>
-            <h1>ABOUT US</h1>
-            <p>EscapeRealm by [Your Team Name]</p>
-        </div>
+      <div class="panel-content">
+        <button class="back-button">BACK</button>
+        <h1>ABOUT US</h1>
+        <p>EscapeRealm by [Your Team Name]</p>
+      </div>
     </div>
 
     <div id="settings-panel" class="panel">
-        <div class="panel-content">
-            <button class="back-button">BACK</button>
-            <h1>SETTINGS</h1>
-            <p>Audio and control settings will be here.</p>
-        </div>
+      <div class="panel-content">
+        <button class="back-button">BACK</button>
+        <h1>SETTINGS</h1>
+        <p>Audio and control settings will be here.</p>
+      </div>
     </div>
-</div>
+  </div>
 
-<script type="module" src="game.js"></script>
-<script>
-    // --- ELEMENT REFERENCES ---
+  <!-- Load Game Script -->
+  <script type="module" src="game.js"></script>
+
+  <script>
+    // === UI ELEMENTS ===
     const uiContainer = document.getElementById("ui-container");
     const usernameDisplay = document.getElementById("player-username");
     const coinsDisplay = document.getElementById("player-coins");
-
     const modalOverlay = document.getElementById("modal-overlay");
     const modalContainer = document.getElementById("modal-container");
     const shopButton = document.getElementById("shop-btn");
@@ -112,89 +112,85 @@
     const aboutPanel = document.getElementById("about-panel");
     const settingsPanel = document.getElementById("settings-panel");
     const modalBackButtons = document.querySelectorAll("#modal-container .back-button");
-
     const mainMenuPanel = document.getElementById("main-menu");
     const levelSelectPanel = document.getElementById("level-select-panel");
     const levelSelectTitle = document.getElementById("level-select-title");
     const modeButtons = document.querySelectorAll(".mode-button");
     const levelSelectBackButton = document.querySelector("#level-select-panel .back-button");
-    const levelButtons = document.querySelectorAll('.level-button');
-
+    const levelButtons = document.querySelectorAll(".level-button");
     let phaserGame = null;
 
-    // --- LOGIN REFERENCES ---
+    // === LOGIN HANDLING ===
     const loginBtn = document.getElementById("login-btn");
     const loginScreen = document.getElementById("login-screen");
     const gameContainer = document.getElementById("game-container");
     const loginMessage = document.getElementById("login-message");
 
-    // --- LOGIN HANDLER ---
     loginBtn.addEventListener("click", async () => {
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-        if (!username || !password) {
-            loginMessage.textContent = "Please fill in both fields.";
-            return;
+      if (!username || !password) {
+        loginMessage.textContent = "Please fill in both fields.";
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          loginMessage.textContent = data.message;
+          handleLoginSuccess(data.username, data.coins);
+        } else {
+          const signupRes = await fetch("http://localhost:5000/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+
+          if (signupRes.ok) {
+            const data = await signupRes.json();
+            loginMessage.textContent = "New account created! Logging in...";
+            handleLoginSuccess(username, 0);
+          } else {
+            const err = await signupRes.json();
+            loginMessage.textContent = err.message;
+          }
         }
-
-        try {
-            const res = await fetch("http://localhost:5000/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                loginMessage.textContent = data.message;
-                handleLoginSuccess(data.username, data.coins);
-            } else {
-                const signupRes = await fetch("http://localhost:5000/signup", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password })
-                });
-
-                if (signupRes.ok) {
-                    const data = await signupRes.json();
-                    loginMessage.textContent = "New account created! Logging in...";
-                    handleLoginSuccess(username, 0);
-                } else {
-                    const err = await signupRes.json();
-                    loginMessage.textContent = err.message;
-                }
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            loginMessage.textContent = "Server not responding. Is backend running?";
-        }
+      } catch (error) {
+        console.error("Error:", error);
+        loginMessage.textContent = "Server not responding. Is backend running?";
+      }
     });
 
-    // --- LOGIN SUCCESS FUNCTION ---
     function handleLoginSuccess(username, coins) {
-        loginScreen.style.display = "none";
-        uiContainer.classList.remove("hidden");
-        gameContainer.style.display = "block";
-        usernameDisplay.textContent = username;
-        coinsDisplay.textContent = `${coins} 🪙`;
+      loginScreen.style.display = "none";
+      uiContainer.classList.remove("hidden");
+      gameContainer.style.display = "block";
+      usernameDisplay.textContent = username;
+      coinsDisplay.textContent = `${coins} 🪙`;
 
-        if (!phaserGame) {
-            phaserGame = window.initPhaserGame(username, coins);
-        }
+      if (!phaserGame && typeof window.initPhaserGame === "function") {
+        phaserGame = window.initPhaserGame(username, coins);
+      }
     }
 
-    // --- MODAL FUNCTIONS ---
+    // === MODAL FUNCTIONS ===
     function openModal(panelElement) {
-        modalContainer.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-        panelElement.classList.add("active");
-        modalOverlay.classList.remove("hidden");
-        modalContainer.classList.remove("hidden");
+      modalContainer.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+      panelElement.classList.add("active");
+      modalOverlay.classList.remove("hidden");
+      modalContainer.classList.remove("hidden");
     }
 
     function closeModal() {
-        modalOverlay.classList.add("hidden");
-        modalContainer.classList.add("hidden");
+      modalOverlay.classList.add("hidden");
+      modalContainer.classList.add("hidden");
     }
 
     shopButton.addEventListener("click", () => openModal(shopPanel));
@@ -202,71 +198,70 @@
     settingsButton.addEventListener("click", () => openModal(settingsPanel));
     modalBackButtons.forEach((button) => button.addEventListener("click", closeModal));
 
-    // --- SCREEN NAVIGATION ---
+    // === SCREEN NAVIGATION ===
     function showLevelSelect(modeName) {
-        levelSelectTitle.textContent = modeName;
-        mainMenuPanel.classList.remove("active");
-        levelSelectPanel.classList.add("active");
+      levelSelectTitle.textContent = modeName;
+      mainMenuPanel.classList.remove("active");
+      levelSelectPanel.classList.add("active");
     }
 
     function showMainMenu() {
-        levelSelectPanel.classList.remove("active");
-        mainMenuPanel.classList.add("active");
+      levelSelectPanel.classList.remove("active");
+      mainMenuPanel.classList.add("active");
     }
 
     modeButtons.forEach((button) => {
-        button.addEventListener("click", () => showLevelSelect(button.dataset.mode));
+      button.addEventListener("click", () => showLevelSelect(button.dataset.mode));
     });
     levelSelectBackButton.addEventListener("click", showMainMenu);
 
-    // --- GAME START ---
+    // === GAME START ===
     function startGameplay(levelNumber) {
-        uiContainer.classList.add('hidden');
-        const homeScene = phaserGame.scene.getScene('HomeScene');
-        homeScene.scene.start('GameplayScene', { level: levelNumber });
+      if (!phaserGame) {
+        console.error("Phaser game not initialized yet.");
+        return;
+      }
+
+      uiContainer.classList.add("hidden");
+      const gameplayScene = phaserGame.scene.getScene("GameplayScene");
+      if (gameplayScene) {
+        gameplayScene.scene.start("GameplayScene", { level: levelNumber });
+      } else {
+        console.error("GameplayScene not found.");
+      }
     }
 
-    levelButtons.forEach(button => {
-        button.addEventListener('click', () => startGameplay(button.textContent));
+    levelButtons.forEach((button) => {
+      button.addEventListener("click", () => startGameplay(button.textContent));
     });
 
-    // --- LOGOUT ON CLOSE ---
+    // === RETURN TO MAIN MENU (GLOBAL) ===
+    window.showMainMenuUI = function () {
+      if (!phaserGame) return;
+      const gameplayScene = phaserGame.scene.getScene("GameplayScene");
+      if (gameplayScene && gameplayScene.scene.isActive()) {
+        gameplayScene.scene.stop();
+      }
+      uiContainer.classList.remove("hidden");
+
+      const currentCoins = phaserGame.registry.get("coins");
+      coinsDisplay.textContent = `${currentCoins} 🪙`;
+    };
+
+    // === LOGOUT ON CLOSE ===
     window.addEventListener("beforeunload", async () => {
-        if (window.playerName) {
-            try {
-                await fetch("http://localhost:5000/logout", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username: window.playerName })
-                });
-            } catch (err) {
-                console.warn("Could not update logout status:", err);
-            }
+      if (window.playerName) {
+        try {
+          await fetch("http://localhost:5000/logout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: window.playerName }),
+          });
+        } catch (err) {
+          console.warn("Could not update logout status:", err);
         }
+      }
     });
-    // --- GAME START ---
-    function startGameplay(levelNumber) {
-        uiContainer.classList.add('hidden');
-        const homeScene = phaserGame.scene.getScene('HomeScene');
-        homeScene.scene.start('GameplayScene', { level: levelNumber });
-    }
-
-    // ADD THIS NEW FUNCTION
-    window.showMainMenuUI = function() {
-        const gameplayScene = phaserGame.scene.getScene('GameplayScene');
-        if (gameplayScene && gameplayScene.scene.isActive()) {
-            gameplayScene.scene.stop();
-        }
-        uiContainer.classList.remove('hidden');
-        // Refresh coin display when returning to menu
-        const currentCoins = phaserGame.registry.get("coins");
-        document.getElementById("player-coins").textContent = `${currentCoins} 🪙`;
-    }
-
-    levelButtons.forEach(button => {
-        button.addEventListener('click', () => startGameplay(button.textContent));
-    });
-</script>
-
+  </script>
 </body>
 </html>
