@@ -99,169 +99,193 @@
   <script type="module" src="game.js"></script>
 
   <script>
-    // === UI ELEMENTS ===
-    const uiContainer = document.getElementById("ui-container");
-    const usernameDisplay = document.getElementById("player-username");
-    const coinsDisplay = document.getElementById("player-coins");
-    const modalOverlay = document.getElementById("modal-overlay");
-    const modalContainer = document.getElementById("modal-container");
-    const shopButton = document.getElementById("shop-btn");
-    const aboutButton = document.getElementById("about-btn");
-    const settingsButton = document.getElementById("settings-btn");
-    const shopPanel = document.getElementById("shop-panel");
-    const aboutPanel = document.getElementById("about-panel");
-    const settingsPanel = document.getElementById("settings-panel");
-    const modalBackButtons = document.querySelectorAll("#modal-container .back-button");
-    const mainMenuPanel = document.getElementById("main-menu");
-    const levelSelectPanel = document.getElementById("level-select-panel");
-    const levelSelectTitle = document.getElementById("level-select-title");
-    const modeButtons = document.querySelectorAll(".mode-button");
-    const levelSelectBackButton = document.querySelector("#level-select-panel .back-button");
-    const levelButtons = document.querySelectorAll(".level-button");
-    let phaserGame = null;
+  // === UI ELEMENTS ===
+  const uiContainer = document.getElementById("ui-container");
+  const usernameDisplay = document.getElementById("player-username");
+  const coinsDisplay = document.getElementById("player-coins");
+  const modalOverlay = document.getElementById("modal-overlay");
+  const modalContainer = document.getElementById("modal-container");
+  const shopButton = document.getElementById("shop-btn");
+  const aboutButton = document.getElementById("about-btn");
+  const settingsButton = document.getElementById("settings-btn");
+  const shopPanel = document.getElementById("shop-panel");
+  const aboutPanel = document.getElementById("about-panel");
+  const settingsPanel = document.getElementById("settings-panel");
+  const modalBackButtons = document.querySelectorAll("#modal-container .back-button");
+  const mainMenuPanel = document.getElementById("main-menu");
+  const levelSelectPanel = document.getElementById("level-select-panel");
+  const levelSelectTitle = document.getElementById("level-select-title");
+  const modeButtons = document.querySelectorAll(".mode-button");
+  const levelSelectBackButton = document.querySelector("#level-select-panel .back-button");
+  const levelButtons = document.querySelectorAll(".level-button");
+  let phaserGame = null;
 
-    // === LOGIN HANDLING ===
-    const loginBtn = document.getElementById("login-btn");
-    const loginScreen = document.getElementById("login-screen");
-    const gameContainer = document.getElementById("game-container");
-    const loginMessage = document.getElementById("login-message");
+  // keep track of selected mode (folder name)
+  // default to single_player
+  let selectedMode = "single_player";
 
-    loginBtn.addEventListener("click", async () => {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
+  // utility: maps UI label → folder name
+  function uiModeToFolder(modeLabel) {
+    const label = (modeLabel || "").toLowerCase();
+    if (label.includes("single")) return "single_player";
+    if (label.includes("coop")) return "ai_coop";
+    if (label.includes("player") && label.includes("ai")) return "ai_race";
+    // fallback
+    return "single_player";
+  }
 
-      if (!username || !password) {
-        loginMessage.textContent = "Please fill in both fields.";
-        return;
-      }
+  // === LOGIN HANDLING ===
+  const loginBtn = document.getElementById("login-btn");
+  const loginScreen = document.getElementById("login-screen");
+  const gameContainer = document.getElementById("game-container");
+  const loginMessage = document.getElementById("login-message");
 
-      try {
-        const res = await fetch("http://localhost:5000/login", {
+  loginBtn.addEventListener("click", async () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+      loginMessage.textContent = "Please fill in both fields.";
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        loginMessage.textContent = data.message;
+        handleLoginSuccess(data.username, data.coins);
+      } else {
+        const signupRes = await fetch("http://localhost:5000/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          loginMessage.textContent = data.message;
-          handleLoginSuccess(data.username, data.coins);
+        if (signupRes.ok) {
+          const data = await signupRes.json();
+          loginMessage.textContent = "New account created! Logging in...";
+          handleLoginSuccess(username, 0);
         } else {
-          const signupRes = await fetch("http://localhost:5000/signup", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
-          });
-
-          if (signupRes.ok) {
-            const data = await signupRes.json();
-            loginMessage.textContent = "New account created! Logging in...";
-            handleLoginSuccess(username, 0);
-          } else {
-            const err = await signupRes.json();
-            loginMessage.textContent = err.message;
-          }
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        loginMessage.textContent = "Server not responding. Is backend running?";
-      }
-    });
-
-    function handleLoginSuccess(username, coins) {
-      loginScreen.style.display = "none";
-      uiContainer.classList.remove("hidden");
-      gameContainer.style.display = "block";
-      usernameDisplay.textContent = username;
-      coinsDisplay.textContent = `${coins} 🪙`;
-
-      if (!phaserGame && typeof window.initPhaserGame === "function") {
-        phaserGame = window.initPhaserGame(username, coins);
-      }
-    }
-
-    // === MODAL FUNCTIONS ===
-    function openModal(panelElement) {
-      modalContainer.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-      panelElement.classList.add("active");
-      modalOverlay.classList.remove("hidden");
-      modalContainer.classList.remove("hidden");
-    }
-
-    function closeModal() {
-      modalOverlay.classList.add("hidden");
-      modalContainer.classList.add("hidden");
-    }
-
-    shopButton.addEventListener("click", () => openModal(shopPanel));
-    aboutButton.addEventListener("click", () => openModal(aboutPanel));
-    settingsButton.addEventListener("click", () => openModal(settingsPanel));
-    modalBackButtons.forEach((button) => button.addEventListener("click", closeModal));
-
-    // === SCREEN NAVIGATION ===
-    function showLevelSelect(modeName) {
-      levelSelectTitle.textContent = modeName;
-      mainMenuPanel.classList.remove("active");
-      levelSelectPanel.classList.add("active");
-    }
-
-    function showMainMenu() {
-      levelSelectPanel.classList.remove("active");
-      mainMenuPanel.classList.add("active");
-    }
-
-    modeButtons.forEach((button) => {
-      button.addEventListener("click", () => showLevelSelect(button.dataset.mode));
-    });
-    levelSelectBackButton.addEventListener("click", showMainMenu);
-
-    // === GAME START ===
-    function startGameplay(levelNumber) {
-      if (!phaserGame) {
-        console.error("Phaser game not initialized yet.");
-        return;
-      }
-
-      uiContainer.classList.add("hidden");
-      const gameplayScene = phaserGame.scene.getScene("GameplayScene");
-      if (gameplayScene) {
-        gameplayScene.scene.start("GameplayScene", { level: levelNumber });
-      } else {
-        console.error("GameplayScene not found.");
-      }
-    }
-
-    levelButtons.forEach((button) => {
-      button.addEventListener("click", () => startGameplay(button.textContent));
-    });
-
-    // === RETURN TO MAIN MENU (GLOBAL) ===
-    window.showMainMenuUI = function () {
-      if (!phaserGame) return;
-      const gameplayScene = phaserGame.scene.getScene("GameplayScene");
-      if (gameplayScene && gameplayScene.scene.isActive()) {
-        gameplayScene.scene.stop();
-      }
-      uiContainer.classList.remove("hidden");
-
-      const currentCoins = phaserGame.registry.get("coins");
-      coinsDisplay.textContent = `${currentCoins} 🪙`;
-    };
-
-    // === LOGOUT ON CLOSE ===
-    window.addEventListener("beforeunload", async () => {
-      if (window.playerName) {
-        try {
-          await fetch("http://localhost:5000/logout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: window.playerName }),
-          });
-        } catch (err) {
-          console.warn("Could not update logout status:", err);
+          const err = await signupRes.json();
+          loginMessage.textContent = err.message;
         }
       }
+    } catch (error) {
+      console.error("Error:", error);
+      loginMessage.textContent = "Server not responding. Is backend running?";
+    }
+  });
+
+  function handleLoginSuccess(username, coins) {
+    // expose a handy global: window.playerName (used by your logout)
+    window.playerName = username;
+
+    loginScreen.style.display = "none";
+    uiContainer.classList.remove("hidden");
+    gameContainer.style.display = "block";
+    usernameDisplay.textContent = username;
+    coinsDisplay.textContent = `${coins} 🪙`;
+
+    if (!phaserGame && typeof window.initPhaserGame === "function") {
+      phaserGame = window.initPhaserGame(username, coins);
+    }
+  }
+
+  // === MODAL FUNCTIONS ===
+  function openModal(panelElement) {
+    modalContainer.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+    panelElement.classList.add("active");
+    modalOverlay.classList.remove("hidden");
+    modalContainer.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    modalOverlay.classList.add("hidden");
+    modalContainer.classList.add("hidden");
+  }
+
+  shopButton.addEventListener("click", () => openModal(shopPanel));
+  aboutButton.addEventListener("click", () => openModal(aboutPanel));
+  settingsButton.addEventListener("click", () => openModal(settingsPanel));
+  modalBackButtons.forEach((button) => button.addEventListener("click", closeModal));
+
+  // === SCREEN NAVIGATION ===
+  function showLevelSelect(modeName) {
+    levelSelectTitle.textContent = modeName;
+    mainMenuPanel.classList.remove("active");
+    levelSelectPanel.classList.add("active");
+  }
+
+  function showMainMenu() {
+    levelSelectPanel.classList.remove("active");
+    mainMenuPanel.classList.add("active");
+  }
+
+  // mode button behavior: set selectedMode and open level select
+  modeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedMode = uiModeToFolder(button.dataset.mode);
+      showLevelSelect(button.dataset.mode);
     });
-  </script>
+  });
+  levelSelectBackButton.addEventListener("click", showMainMenu);
+
+  // === GAME START ===
+  function startGameplay(levelNumber) {
+    if (!phaserGame) {
+      console.error("Phaser game not initialized yet.");
+      return;
+    }
+
+    uiContainer.classList.add("hidden");
+
+    // Pass both mode and level into the scene
+    const gameplayScene = phaserGame.scene.getScene("GameplayScene");
+    if (gameplayScene) {
+      gameplayScene.scene.start("GameplayScene", { mode: selectedMode, level: Number(levelNumber) });
+    } else {
+      // If first run, start the scene via phaser game instance
+      phaserGame.scene.start("GameplayScene", { mode: selectedMode, level: Number(levelNumber) });
+    }
+  }
+
+  levelButtons.forEach((button) => {
+    button.addEventListener("click", () => startGameplay(button.textContent));
+  });
+
+  // === RETURN TO MAIN MENU (GLOBAL) ===
+  window.showMainMenuUI = function () {
+    if (!phaserGame) return;
+    const gameplayScene = phaserGame.scene.getScene("GameplayScene");
+    if (gameplayScene && gameplayScene.scene.isActive()) {
+      gameplayScene.scene.stop();
+    }
+    uiContainer.classList.remove("hidden");
+
+    const currentCoins = phaserGame.registry.get("coins");
+    coinsDisplay.textContent = `${currentCoins} 🪙`;
+  };
+
+  // === LOGOUT ON CLOSE ===
+  window.addEventListener("beforeunload", async () => {
+    if (window.playerName) {
+      try {
+        await fetch("http://localhost:5000/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: window.playerName }),
+        });
+      } catch (err) {
+        console.warn("Could not update logout status:", err);
+      }
+    }
+  });
+</script>
 </body>
 </html>
