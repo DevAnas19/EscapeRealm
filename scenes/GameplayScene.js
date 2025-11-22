@@ -197,11 +197,13 @@ export default class GameplayScene extends Phaser.Scene {
     // -----------------------------
     // SWITCH
     // -----------------------------
-    this.switchObj = null;
-    if (L.switch) {
-      this.switchObj = this.add.rectangle(L.switch.x, L.switch.y, L.switch.width || 60, L.switch.height || 20, 0x7f8c8d);
-      this.physics.add.existing(this.switchObj, true);
-    }
+    this.switchObj = [];
+
+    (L.switch || []).forEach(sw => {
+      const s = this.add.rectangle(sw.x, sw.y, sw.width || 60, sw.height || 20, 0x7f8c8d);
+      this.physics.add.existing(s, true);
+      this.switchObj.push(s);
+    });
 
     // -----------------------------
     // BRIDGE
@@ -284,6 +286,41 @@ export default class GameplayScene extends Phaser.Scene {
       if (fd && this.player) this.physics.add.overlap(this.player, fd, () => this.scene.restart(this.scene.settings.data));
       if (fd && this.box) this.physics.add.overlap(this.box, fd, () => this.scene.restart(this.scene.settings.data));
     });
+
+    // -----------------------------
+    // IN-GAME HOME & RESTART BUTTONS
+    // -----------------------------
+
+    // HOME button
+    const homeBtn = this.add.text(60, 40, "Home", {
+        fontSize: "22px",
+        fill: "#fff",
+        backgroundColor: "#3498db",
+        padding: { left: 10, right: 10, top: 5, bottom: 5 }
+    })
+    .setScrollFactor(0)
+    .setInteractive();
+
+    homeBtn.on("pointerdown", () => {
+        if (window.showMainMenuUI) {
+            window.showMainMenuUI(); // Go back to the main menu
+        }
+    });
+
+    // RESTART button
+    const restartBtn = this.add.text(160, 40, "⟳", {
+        fontSize: "22px",
+        fill: "#fff",
+        backgroundColor: "#e74c3c",
+        padding: { left: 10, right: 10, top: 5, bottom: 5 }
+    })
+    .setScrollFactor(0)
+    .setInteractive();
+
+    restartBtn.on("pointerdown", () => {
+        this.scene.restart(this.scene.settings.data); // Restart level
+    });
+
 
     // -----------------------------
     // UI & INPUT
@@ -397,50 +434,54 @@ export default class GameplayScene extends Phaser.Scene {
     // -----------------------------
     // SWITCH → ENABLE BRIDGE
     // -----------------------------
-    if (this.switchObj) {
-      const sw = this.switchObj;
+    // -----------------------------
+    // SWITCH → ENABLE BRIDGE
+    // -----------------------------
+    if (this.switchObj && this.switchObj.length > 0) {
 
-      const left = sw.x - (sw.width || 0) / 2;
-      const right = sw.x + (sw.width || 0) / 2;
-      const top = sw.y - (sw.height || 0) / 2;
-      const bottom = sw.y + (sw.height || 0) / 2;
+      let anySwitchPressed = false;
 
-      const playerOn = this.player && this.player.x > left && this.player.x < right && this.player.y + 25 >= top && this.player.y + 25 <= bottom + 6;
-      const boxOn = this.box && this.box.x > left && this.box.x < right && this.box.y + 25 >= top && this.box.y + 25 <= bottom + 6;
+      this.switchObj.forEach(sw => {
 
-      if (playerOn || boxOn) {
-        if (sw.setFillStyle) sw.setFillStyle(0x2ecc71);
-        else sw.fillColor = 0x2ecc71;
+        const left = sw.x - (sw.width || 0) / 2;
+        const right = sw.x + (sw.width || 0) / 2;
+        const top = sw.y - (sw.height || 0) / 2;
+        const bottom = sw.y + (sw.height || 0) / 2;
 
-        this.bridgePieces.forEach((bp) => {
-          if (!bp) return;
-          if (bp.body) {
-            try {
-              bp.body.enable = true;
-            } catch (e) {
-              // ignore non-fatal body errors
-            }
-          }
-          if (bp.setVisible) bp.setVisible(true);
-          else bp.visible = true;
-        });
-      } else {
-        if (sw.setFillStyle) sw.setFillStyle(0x7f8c8d);
-        else sw.fillColor = 0x7f8c8d;
+        const playerOn =
+          this.player &&
+          this.player.x > left &&
+          this.player.x < right &&
+          this.player.y + 25 >= top &&
+          this.player.y + 25 <= bottom + 6;
 
-        this.bridgePieces.forEach((bp) => {
-          if (!bp) return;
-          if (bp.body) {
-            try {
-              bp.body.enable = false;
-            } catch (e) {
-              // ignore
-            }
-          }
-          if (bp.setVisible) bp.setVisible(false);
-          else bp.visible = false;
-        });
-      }
+        const boxOn =
+          this.box &&
+          this.box.x > left &&
+          this.box.x < right &&
+          this.box.y + 25 >= top &&
+          this.box.y + 25 <= bottom + 6;
+
+        if (playerOn || boxOn) {
+          anySwitchPressed = true;
+          sw.setFillStyle(0x2ecc71);
+        } else {
+          sw.setFillStyle(0x7f8c8d);
+        }
+
+      });
+
+      // ENABLE / DISABLE BRIDGE
+      this.bridgePieces.forEach(bp => {
+        if (anySwitchPressed) {
+          bp.body.enable = true;
+          bp.setVisible(true);
+        } else {
+          bp.body.enable = false;
+          bp.setVisible(false);
+        }
+      });
     }
+
   }
 }

@@ -5,19 +5,17 @@
 
   "platforms": [
     { "x": 350, "y": 540, "width": 700, "height": 40, "color": 3074457345618258603 },
-    { "x": 1400, "y": 540, "width": 700, "height": 40, "color": 3074457345618258603 },
-    { "x": 350, "y": 350, "width": 200, "height": 20, "color": 9282993 },
-    { "x": 700, "y": 300, "width": 200, "height": 20, "color": 3447003 }
+    { "x": 1850, "y": 250, "width": 400, "height": 40, "color": 3074457345618258603 }
   ],
 
   "movingPlatforms": [
     {
-      "x": 600,
-      "y": 420,
+      "x": 1200,
+      "y": 250,
       "width": 200,
       "height": 20,
-      "minX": 500,
-      "maxX": 900,
+      "minX": 1200,
+      "maxX": 1500,
       "speed": 100,
       "color": 15066597
     }
@@ -25,12 +23,12 @@
 
   "verticalPlatforms": [
     {
-      "x": 1000,
+      "x": 1100,
       "y": 360,
       "width": 200,
       "height": 20,
       "minY": 300,
-      "maxY": 420,
+      "maxY": 510,
       "speed": 75,
       "color": 2590667
     }
@@ -38,14 +36,14 @@
 
   "box": { "x": 420, "y": 480, "width": 50, "height": 50, "dragX": 700, "mass": 2 },
 
-  "key": { "x": 700, "y": 260, "width": 30, "height": 30 },
+  "key": { "x": 1200, "y": 210, "width": 30, "height": 30 },
 
-  "door": { "x": 1900, "y": 460, "width": 50, "height": 80 },
+  "door": { "x": 1900, "y": 190, "width": 50, "height": 80 },
 
-  "switch": { "x": 1250, "y": 525, "width": 60, "height": 20 },
+  "switch": [{ "x": 550, "y": 525, "width": 60, "height": 20 }],
 
   "bridge": [
-    { "x": 1600, "y": 525, "width": 400, "height": 40, "initiallyEnabled": false }
+    { "x": 830, "y": 540, "width": 250, "height": 40, "initiallyEnabled": false }
   ],
 
   "fallDetectors": [
