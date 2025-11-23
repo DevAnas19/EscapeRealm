@@ -94,6 +94,26 @@
       </div>
     </div>
   </div>
+  <input 
+    id="chatInput" 
+    type="text" 
+    placeholder="Type AI command..." 
+    style="
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 8px;
+        border: 2px solid #3498db;
+        outline: none;
+        background: #ffffffcc;
+        z-index: 9999;
+    "
+>
+
 
   <!-- Load Game Script -->
   <script type="module" src="game.js"></script>
@@ -128,7 +148,7 @@
   function uiModeToFolder(modeLabel) {
     const label = (modeLabel || "").toLowerCase();
     if (label.includes("single")) return "single_player";
-    if (label.includes("coop")) return "ai_coop";
+    if (label.includes("co-op") || label.includes("coop")) return "ai_coop";
     if (label.includes("player") && label.includes("ai")) return "ai_race";
     // fallback
     return "single_player";
@@ -185,6 +205,7 @@
   function handleLoginSuccess(username, coins) {
     // expose a handy global: window.playerName (used by your logout)
     window.playerName = username;
+    console.log("Phaser initialized?", phaserGame);
 
     loginScreen.style.display = "none";
     uiContainer.classList.remove("hidden");
@@ -236,24 +257,35 @@
   });
   levelSelectBackButton.addEventListener("click", showMainMenu);
 
-  // === GAME START ===
-  function startGameplay(levelNumber) {
-    if (!phaserGame) {
-      console.error("Phaser game not initialized yet.");
-      return;
-    }
+  // === START GAMEPLAY SCENE ===
+    function startGameplay(levelNumber) {
+      console.log("Selected Mode =", selectedMode);
+      if (!phaserGame) {
+          console.error("Phaser game not initialized yet.");
+          return;
+      }
 
-    uiContainer.classList.add("hidden");
+      uiContainer.classList.add("hidden");
 
-    // Pass both mode and level into the scene
-    const gameplayScene = phaserGame.scene.getScene("GameplayScene");
-    if (gameplayScene) {
-      gameplayScene.scene.start("GameplayScene", { mode: selectedMode, level: Number(levelNumber) });
-    } else {
-      // If first run, start the scene via phaser game instance
-      phaserGame.scene.start("GameplayScene", { mode: selectedMode, level: Number(levelNumber) });
-    }
+      // Decide which scene to start
+      const isAICoop = selectedMode === "ai_coop";
+      const isSingle = selectedMode === "single_player";
+      const isAIRace = selectedMode === "ai_race";
+
+      let sceneKey = "GameplayScene"; // default
+
+      if (isAICoop) sceneKey = "AICoopScene";
+      if (isAIRace) sceneKey = "AIRaceScene"; // future mode
+
+      const scene = phaserGame.scene.getScene(sceneKey);
+
+      if (scene) {
+          scene.scene.start(sceneKey, { mode: selectedMode, level: Number(levelNumber) });
+      } else {
+          phaserGame.scene.start(sceneKey, { mode: selectedMode, level: Number(levelNumber) });
+      }
   }
+
 
   levelButtons.forEach((button) => {
     button.addEventListener("click", () => startGameplay(button.textContent));
