@@ -1,6 +1,7 @@
 // game.js
 import GameplayScene from "./scenes/GameplayScene.js";
 import AICoopScene from "./scenes/AICoopScene.js";
+import AIRaceScene from "./scenes/AIRaceScene.js";
 
 // === MAIN INITIALIZATION FUNCTION ===
 export function initPhaserGame(username, coins = 0) {
@@ -25,7 +26,7 @@ export function initPhaserGame(username, coins = 0) {
       },
     },
 
-    scene: [AICoopScene, GameplayScene],
+    scene: [AICoopScene, GameplayScene, AIRaceScene],
 
     scale: {
       mode: Phaser.Scale.RESIZE,
