@@ -4,311 +4,641 @@
   <meta charset="UTF-8" />
   <title>EscapeRealm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
 
-  <!-- LOGIN SCREEN -->
-  <div id="login-screen">
-    <h1 id="game-title">EscapeREALM</h1>
-    <div class="login-box">
-      <h2>WELCOME !!!</h2>
-      <input type="text" id="username" placeholder="In-Game Username" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button id="login-btn">LOG IN</button>
-      <p id="login-message"></p>
+  <div id="auth-wrapper">
+    <div class="scanline"></div>
+    
+    <div class="container" id="container">
+        
+        <div class="form-container sign-up-container">
+            <form id="signup-form">
+                <h1 class="pixel-header text-blue-glow">CREATE ACCOUNT</h1>
+                
+                <div class="social-container">
+                    <a href="#" class="social-btn google"><i class="fa-brands fa-google"></i></a>
+                    <a href="#" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                </div>
+                
+                <span>or use your email for registration</span>
+                
+                <div class="input-wrapper">
+                    <input type="text" id="signup-username" placeholder="Username" required />
+                </div>
+
+                <div class="input-wrapper">
+                    <input type="email" id="signup-email" placeholder="Email" />
+                </div>
+
+                <div class="input-wrapper password-box">
+                    <input type="password" id="signup-password" placeholder="Password" required autocomplete="new-password" />
+                    <i class="fa-solid fa-eye toggle-pass" data-target="signup-password"></i>
+                </div>
+                
+                <button type="submit" class="action-btn">Register</button>
+                <p id="signup-message" class="error-msg"></p>
+            </form>
+        </div>
+
+        <div class="form-container sign-in-container">
+            <form id="login-form">
+                <h1 class="pixel-header text-blue-glow">PLAYER LOGIN</h1>
+                
+                <div class="social-container">
+                    <a href="#" class="social-btn google"><i class="fa-brands fa-google"></i></a>
+                    <a href="#" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                </div>
+                
+                <span>or use your account</span>
+
+                <div class="input-wrapper">
+                    <input type="text" id="login-username" placeholder="Username" required />
+                </div>
+
+                <div class="input-wrapper password-box">
+                    <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
+                    <i class="fa-solid fa-eye toggle-pass" data-target="login-password"></i>
+                </div>
+                
+                <a href="#" class="forgot-link">Forgot Password?</a>
+                
+                <button type="submit" class="action-btn">Login</button>
+                <p id="login-message" class="error-msg"></p>
+            </form>
+        </div>
+
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-right">
+                    <h1 class="pixel-header">NEW<br>PLAYER?</h1>
+                    <p>Enter your details to start your survival journey.</p>
+                    <button type="button" class="ghost-btn" id="signUpBtn">Sign Up</button>
+                </div>
+                <div class="toggle-panel toggle-left">
+                    <h1 class="pixel-header">WELCOME<br>BACK!</h1>
+                    <p>To keep connected with the server, please login.</p>
+                    <button type="button" class="ghost-btn" id="signInBtn">Sign In</button>
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 
-  <!-- GAME CONTAINER -->
   <div id="game-container" style="display: none;"></div>
 
-  <!-- UI CONTAINER -->
-  <div id="ui-container" class="hidden">
+<div id="ui-container" class="hidden">
+    
     <div class="top-bar">
-      <div class="player-info">
-        <span id="player-username">USERNAME</span>
-        <span id="player-coins">000 🪙</span>
-      </div>
-      <div class="nav-buttons">
-        <button id="shop-btn">SHOP</button>
-        <button id="about-btn">ABOUT US</button>
-        <button id="settings-btn">SETTINGS</button>
-      </div>
+        <div class="hud-group left">
+            <div class="hud-label">OPERATOR</div>
+            <div class="hud-value" id="player-username">Loading...</div>
+        </div>
+        
+        <div class="hud-title">ESCAPE REALM</div>
+
+        <div class="hud-group right">
+            <div class="hud-label">CREDITS</div>
+            <div class="hud-value text-gold" id="player-coins">0 🪙</div>
+        </div>
+        <input 
+      id="chatInput" 
+      type="text" 
+      placeholder="Type AI command..." 
+      style="
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 300px;
+          padding: 10px;
+          font-size: 18px;
+          border-radius: 8px;
+          border: 2px solid #3498db;
+          outline: none;
+          background: #ffffffcc;
+          z-index: 9999;
+          display: none;
+      "
+    >
     </div>
 
-    <!-- MAIN MENU -->
     <div id="main-menu" class="panel active">
-      <div class="panel-content">
-        <h1>Select Mode</h1>
-        <div class="mode-selection">
-          <button class="mode-button" data-mode="SINGLE PLAYER">SINGLE PLAYER</button>
-          <button class="mode-button" data-mode="AI CO-OP">AI CO-OP</button>
-          <button class="mode-button" data-mode="PLAYER VS AI">PLAYER VS AI</button>
+        <div class="dashboard-container">
+            
+            <h2 class="section-title">SELECT GAME MODE</h2>
+            <p class="section-subtitle">Choose how you want to play EscapeREALM</p>
+
+            <div class="cards-wrapper">
+                
+                <div class="game-card">
+                    <div class="card-icon">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <h3>Single Player</h3>
+                    <p class="card-desc">Challenge yourself against the game's toughest levels alone.</p>
+                    
+                    <ul class="card-features">
+                        <li><i class="fa-solid fa-check"></i> 5 Challenging Levels</li>
+                        <li><i class="fa-solid fa-check"></i> Unlock Progression</li>
+                        <li><i class="fa-solid fa-check"></i> Earn Max Coins</li>
+                    </ul>
+
+                    <button class="mode-button btn-primary" data-mode="SINGLE PLAYER">
+                        SELECT MODE
+                    </button>
+                </div>
+
+                <div class="game-card">
+                    <div class="card-icon">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <h3>AI Co-Op</h3>
+                    <p class="card-desc">Team up with an advanced AI to solve puzzles together.</p>
+                    
+                    <ul class="card-features">
+                        <li><i class="fa-solid fa-check"></i> Assistive AI</li>
+                        <li><i class="fa-solid fa-check"></i> Double Trouble</li>
+                        <li><i class="fa-solid fa-check"></i> Survival Mode</li>
+                    </ul>
+
+                    <button class="mode-button btn-secondary" data-mode="AI CO-OP">
+                        SELECT MODE
+                    </button>
+                </div>
+
+                <div class="game-card">
+                    <div class="lock-overlay"><i class="fa-solid fa-lock"></i></div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h3>AI vs You</h3>
+                    <p class="card-desc">Face off against an intelligent AI opponent in a race.</p>
+                    
+                    <ul class="card-features">
+                        <li><i class="fa-solid fa-check"></i> Smart Adaptation</li>
+                        <li><i class="fa-solid fa-check"></i> High Stakes</li>
+                        <li><i class="fa-solid fa-check"></i> Leaderboards</li>
+                    </ul>
+
+                    <button class="mode-button" data-mode="PLAYER VS AI">
+                        SELECT MODE
+                    </button>
+                </div>
+
+            </div>
+            
+            <div class="bottom-nav">
+                <button id="shop-btn" class="nav-icon-btn"><i class="fa-solid fa-cart-shopping"></i> SHOP</button>
+                <button id="settings-btn" class="nav-icon-btn"><i class="fa-solid fa-gear"></i> SETTINGS</button>
+                <button id="about-btn" class="nav-icon-btn"><i class="fa-solid fa-circle-info"></i> ABOUT</button>
+                
+                <button id="logout-btn" class="nav-icon-btn" style="border-color: #e74c3c; color: #e74c3c;">
+                    <i class="fa-solid fa-power-off"></i> LOGOUT
+                </button>
+            </div>
+
         </div>
-      </div>
     </div>
 
-    <!-- LEVEL SELECT -->
     <div id="level-select-panel" class="panel">
-      <div class="panel-content">
-        <button class="back-button">BACK</button>
-        <h1 id="level-select-title">SINGLE PLAYER</h1>
-        <div class="level-grid">
-          <button class="level-button">1</button>
-          <button class="level-button">2</button>
-          <button class="level-button">3</button>
-          <button class="level-button">4</button>
-          <button class="level-button">5</button>
+        <div class="dashboard-container" style="max-width: 1200px;"> 
+            
+            <h1 class="section-title" style="font-size: 40px; margin-bottom: 5px;">SELECT LEVEL</h1>
+            <p class="section-subtitle">All sectors unlocked. Difficulty increases by sector.</p>
+
+            <div class="level-grid-modern">
+                
+                <div class="level-card">
+                    <div class="card-top"><span class="lvl-tag">SECTOR 01</span></div>
+                    <h2 class="lvl-title">Neon Gateway</h2>
+                    <div class="lvl-stars" style="color: #2ecc71;"> 
+                        <i class="fa-solid fa-star active" style="color: #2ecc71;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                    </div>
+                    <p class="lvl-desc">Initiate your sequence. Bypass the outer firewalls.</p>
+                    <div class="lvl-reward">
+                        <i class="fa-solid fa-link text-gold"></i><span>Reward</span><span class="amount text-gold">50</span>
+                    </div>
+                    <button class="lvl-btn primary" data-level="1">START LEVEL</button>
+                </div>
+
+                <div class="level-card">
+                    <div class="card-top"><span class="lvl-tag">SECTOR 02</span></div>
+                    <h2 class="lvl-title">Cyber Caverns</h2>
+                    <div class="lvl-stars">
+                        <i class="fa-solid fa-star active" style="color: #2ecc71;"></i>
+                        <i class="fa-solid fa-star active" style="color: #2ecc71;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                    </div>
+                    <p class="lvl-desc">Ride the data stream. Avoid the corruption spikes.</p>
+                    <div class="lvl-reward">
+                        <i class="fa-solid fa-link text-gold"></i><span>Reward</span><span class="amount text-gold">100</span>
+                    </div>
+                    <button class="lvl-btn primary" data-level="2">START LEVEL</button>
+                </div>
+
+                <div class="level-card">
+                    <div class="card-top"><span class="lvl-tag">SECTOR 03</span></div>
+                    <h2 class="lvl-title">Glitch City</h2>
+                    <div class="lvl-stars">
+                        <i class="fa-solid fa-star active" style="color: #f1c40f;"></i>
+                        <i class="fa-solid fa-star active" style="color: #f1c40f;"></i>
+                        <i class="fa-solid fa-star active" style="color: #f1c40f;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                    </div>
+                    <p class="lvl-desc">Unstable platforms detected. Watch your step.</p>
+                    <div class="lvl-reward">
+                        <i class="fa-solid fa-link text-gold"></i><span>Reward</span><span class="amount text-gold">150</span>
+                    </div>
+                    <button class="lvl-btn primary" data-level="3">START LEVEL</button>
+                </div>
+
+                <div class="level-card">
+                    <div class="card-top"><span class="lvl-tag">SECTOR 04</span></div>
+                    <h2 class="lvl-title">Void Walker</h2>
+                    <div class="lvl-stars">
+                        <i class="fa-solid fa-star active" style="color: #e67e22;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e67e22;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e67e22;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e67e22;"></i>
+                        <i class="fa-solid fa-star" style="color: #444;"></i>
+                    </div>
+                    <p class="lvl-desc">Security drones are active. Do not be seen.</p>
+                    <div class="lvl-reward">
+                        <i class="fa-solid fa-link text-gold"></i><span>Reward</span><span class="amount text-gold">200</span>
+                    </div>
+                    <button class="lvl-btn primary" data-level="4">START LEVEL</button>
+                </div>
+
+                <div class="level-card">
+                    <div class="card-top"><span class="lvl-tag">SECTOR 05</span></div>
+                    <h2 class="lvl-title">System Core</h2>
+                    <div class="lvl-stars">
+                        <i class="fa-solid fa-star active" style="color: #e74c3c; text-shadow: 0 0 8px red;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e74c3c; text-shadow: 0 0 8px red;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e74c3c; text-shadow: 0 0 8px red;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e74c3c; text-shadow: 0 0 8px red;"></i>
+                        <i class="fa-solid fa-star active" style="color: #e74c3c; text-shadow: 0 0 8px red;"></i>
+                    </div>
+                    <p class="lvl-desc">The final override. Survive the ultimate purge.</p>
+                    <div class="lvl-reward">
+                        <i class="fa-solid fa-link text-gold"></i><span>Reward</span><span class="amount text-gold">300</span>
+                    </div>
+                    <button class="lvl-btn primary" data-level="5">START LEVEL</button>
+                </div>
+
+            </div>
+            
+            <button class="back-button" style="position:relative; top:auto; right:auto; margin-top:30px;">BACK TO MENU</button>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODALS -->
-  <div id="modal-overlay" class="hidden"></div>
-  <div id="modal-container" class="hidden">
-    <div id="shop-panel" class="panel">
-      <div class="panel-content">
-        <button class="back-button">BACK</button>
-        <h1>SHOP</h1>
-        <p>Skins and items will be here soon!</p>
-      </div>
     </div>
 
-    <div id="about-panel" class="panel">
-      <div class="panel-content">
-        <button class="back-button">BACK</button>
-        <h1>ABOUT US</h1>
-        <p>EscapeRealm by [Your Team Name]</p>
-      </div>
+    <div id="modal-overlay" class="hidden"></div>
+    <div id="modal-container" class="hidden">
+        <div id="shop-panel" class="panel">
+            <div class="panel-content glass-panel">
+                <button class="back-button">BACK</button>
+                <h1>SHOP</h1>
+                <p>Cybernetics and Skins coming soon.</p>
+            </div>
+        </div>
+        <div id="about-panel" class="panel">
+            <div class="panel-content glass-panel">
+                <button class="back-button">BACK</button>
+                <h1>SYSTEM INFO</h1>
+                <p>EscapeRealm v2.0</p>
+            </div>
+        </div>
+        <div id="settings-panel" class="panel">
+            <div class="panel-content glass-panel">
+                <button class="back-button">BACK</button>
+                <h1>SETTINGS</h1>
+                <p>Audio: ON <br> Graphics: ULTRA</p>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div id="settings-panel" class="panel">
-      <div class="panel-content">
-        <button class="back-button">BACK</button>
-        <h1>SETTINGS</h1>
-        <p>Audio and control settings will be here.</p>
-      </div>
-    </div>
-  </div>
+<script type="module" src="game.js"></script>
+<script>
+    // --- GLOBAL VARIABLES ---
+    let phaserGame = null;
+    let selectedMode = "single_player";
+    let playerCoins = 0; // <-- synced with backend + game
 
-  <!-- Chat Input -->
-  <input 
-    id="chatInput" 
-    type="text" 
-    placeholder="Type AI command..." 
-    style="
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 300px;
-        padding: 10px;
-        font-size: 18px;
-        border-radius: 8px;
-        border: 2px solid #3498db;
-        outline: none;
-        background: #ffffffcc;
-        z-index: 9999;
-    "
-  >
+    // --- UTILS ---
+    window.uiModeToFolder = function(modeLabel) {
+        const l = (modeLabel || "").toLowerCase();
+        if (l.includes("single")) return "single_player";
+        if (l.includes("co-op") || l.includes("coop")) return "ai_coop";
+        if (l.includes("player") && l.includes("ai")) return "ai_race";
+        return "single_player";
+    };
 
-  <!-- Load Game Script -->
-  <script type="module" src="game.js"></script>
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("EscapeRealm UI Loaded");
 
-  <script>
-  // ===== UI ELEMENTS =====
-  const uiContainer = document.getElementById("ui-container");
-  const usernameDisplay = document.getElementById("player-username");
-  const coinsDisplay = document.getElementById("player-coins");
-  const modalOverlay = document.getElementById("modal-overlay");
-  const modalContainer = document.getElementById("modal-container");
-  const shopButton = document.getElementById("shop-btn");
-  const aboutButton = document.getElementById("about-btn");
-  const settingsButton = document.getElementById("settings-btn");
-  const shopPanel = document.getElementById("shop-panel");
-  const aboutPanel = document.getElementById("about-panel");
-  const settingsPanel = document.getElementById("settings-panel");
-  const modalBackButtons = document.querySelectorAll("#modal-container .back-button");
-  const mainMenuPanel = document.getElementById("main-menu");
-  const levelSelectPanel = document.getElementById("level-select-panel");
-  const levelSelectTitle = document.getElementById("level-select-title");
-  const modeButtons = document.querySelectorAll(".mode-button");
-  const levelSelectBackButton = document.querySelector("#level-select-panel .back-button");
-  const levelButtons = document.querySelectorAll(".level-button");
+        // UI Elements
+        const authWrapper = document.getElementById('auth-wrapper');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        
+        const uiContainer = document.getElementById("ui-container");
+        const gameContainer = document.getElementById("game-container");
+        const mainMenuPanel = document.getElementById("main-menu");
+        const levelSelectPanel = document.getElementById("level-select-panel");
+        const chatInput = document.getElementById("chatInput");
 
-  let phaserGame = null;
-  let selectedMode = "single_player";
+        const loginMessage = document.getElementById("login-message");
+        const signupMessage = document.getElementById("signup-message");
+        const userDisplay = document.getElementById("player-username");
+        const coinDisplay = document.getElementById("player-coins");
 
-  // Map visible mode text → folder name
-  function uiModeToFolder(modeLabel) {
-    const l = (modeLabel || "").toLowerCase();
-    if (l.includes("single")) return "single_player";
-    if (l.includes("co-op") || l.includes("coop")) return "ai_coop";
-    if (l.includes("player") && l.includes("ai")) return "ai_race";
-    return "single_player";
-  }
+        // -------------------------
+        // 1. LOGIN LOGIC (BACKEND)
+        // -------------------------
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value.trim();
+                const password = document.getElementById('login-password').value.trim();
 
-  // ----- LOGIN -----
-  const loginBtn = document.getElementById("login-btn");
-  const loginScreen = document.getElementById("login-screen");
-  const gameContainer = document.getElementById("game-container");
-  const loginMessage = document.getElementById("login-message");
+                if (!username || !password) {
+                    if (loginMessage) loginMessage.textContent = "Please enter username and password.";
+                    return;
+                }
 
-  loginBtn.addEventListener("click", async () => {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+                try {
+                    const res = await fetch("http://localhost:5000/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ username, password }),
+                    });
 
-    if (!username || !password) {
-      loginMessage.textContent = "Please fill in both fields.";
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        loginMessage.textContent = data.message;
-        handleLoginSuccess(data.username, data.coins);
-      } else {
-        const signupRes = await fetch("http://localhost:5000/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
-
-        if (signupRes.ok) {
-          const data = await signupRes.json();
-          loginMessage.textContent = "New account created! Logging in...";
-          handleLoginSuccess(username, 0);
-        } else {
-          const err = await signupRes.json();
-          loginMessage.textContent = err.message;
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (loginMessage) loginMessage.textContent = "";
+                        handleLoginSuccess(data.username || username, data.coins ?? 0);
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        if (loginMessage) {
+                            loginMessage.textContent = err.message || "Invalid username or password.";
+                        }
+                    }
+                } catch (error) {
+                    console.error("Login error:", error);
+                    if (loginMessage) loginMessage.textContent = "Server not responding. Is backend running?";
+                }
+            });
         }
-      }
-    } catch (err) {
-      console.error(err);
-      loginMessage.textContent = "Server not responding.";
-    }
-  });
+        
+        // -------------------------
+        // 2. SIGNUP LOGIC (BACKEND)
+        // -------------------------
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('signup-username').value.trim();
+                const password = document.getElementById('signup-password').value.trim();
+                const email = document.getElementById('signup-email').value.trim();
 
-  function handleLoginSuccess(username, coins) {
-    window.playerName = username;
+                if (!username || !password) {
+                    if (signupMessage) signupMessage.textContent = "Username and password are required.";
+                    return;
+                }
 
-    loginScreen.style.display = "none";
-    uiContainer.classList.remove("hidden");
-    gameContainer.style.display = "block";
-    usernameDisplay.textContent = username;
-    coinsDisplay.textContent = `${coins} 🪙`;
+                try {
+                    const res = await fetch("http://localhost:5000/signup", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ username, password, email }),
+                    });
 
-    if (!phaserGame && typeof window.initPhaserGame === "function") {
-      phaserGame = window.initPhaserGame(username, coins);
-    }
-  }
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (signupMessage) signupMessage.textContent = "Account created! Logging in...";
+                        handleLoginSuccess(username, data.coins ?? 0);
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        if (signupMessage) {
+                            signupMessage.textContent = err.message || "Signup failed.";
+                        }
+                    }
+                } catch (error) {
+                    console.error("Signup error:", error);
+                    if (signupMessage) signupMessage.textContent = "Server not responding. Is backend running?";
+                }
+            });
+        }
 
-  // ----- MODALS -----
-  function openModal(panel) {
-    modalContainer.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-    panel.classList.add("active");
-    modalOverlay.classList.remove("hidden");
-    modalContainer.classList.remove("hidden");
-  }
+        // -------------------------
+        // LOGIN SUCCESS HANDLER
+        // -------------------------
+        function handleLoginSuccess(username, coins) {
+            window.playerName = username;
+            playerCoins = coins || 0;
 
-  function closeModal() {
-    modalOverlay.classList.add("hidden");
-    modalContainer.classList.add("hidden");
-  }
+            if (authWrapper) authWrapper.style.display = 'none';
+            if (uiContainer) uiContainer.classList.remove("hidden");
+            
+            if (userDisplay) userDisplay.textContent = username;
+            if (coinDisplay) coinDisplay.textContent = `${playerCoins} 🪙`;
 
-  shopButton.addEventListener("click", () => openModal(shopPanel));
-  aboutButton.addEventListener("click", () => openModal(aboutPanel));
-  settingsButton.addEventListener("click", () => openModal(settingsPanel));
-  modalBackButtons.forEach(btn => btn.addEventListener("click", closeModal));
+            if (gameContainer) gameContainer.style.display = 'none';
+        }
 
-  // ----- MODE SELECTION -----
-  modeButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      selectedMode = uiModeToFolder(button.dataset.mode);
-      levelSelectTitle.textContent = button.dataset.mode;
-      mainMenuPanel.classList.remove("active");
-      levelSelectPanel.classList.add("active");
-    });
-  });
+        // -------------------------
+        // 3. MODE SELECTION
+        // -------------------------
+        document.querySelectorAll(".mode-button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const mode = btn.getAttribute("data-mode");
+                selectedMode = window.uiModeToFolder(mode);
+                
+                if (mainMenuPanel) mainMenuPanel.classList.remove("active");
+                if (levelSelectPanel) levelSelectPanel.classList.add("active");
 
-  levelSelectBackButton.addEventListener("click", () => {
-    levelSelectPanel.classList.remove("active");
-    mainMenuPanel.classList.add("active");
-  });
-
-  // =====================================================
-  //              FIXED startGameplay()
-  // =====================================================
-  function startGameplay(levelNumber) {
-    console.log("Starting mode:", selectedMode);
-
-    if (!phaserGame) {
-      console.error("Phaser not initialized yet.");
-      return;
-    }
-
-    uiContainer.classList.add("hidden");
-
-    const isSingle = selectedMode === "single_player";
-    const isAICoop = selectedMode === "ai_coop";
-    const isAIRace = selectedMode === "ai_race";
-
-    let sceneKey = null;
-
-    if (isSingle) sceneKey = "GameplayScene";
-    if (isAICoop) sceneKey = "AICoopScene";
-    if (isAIRace) sceneKey = "AIRaceScene";
-
-    // STOP all other scenes to prevent overlap
-    phaserGame.scene.getScenes(true).forEach(s => s.scene.stop());
-
-    // START only the correct scene
-    phaserGame.scene.start(sceneKey, {
-      mode: selectedMode,
-      level: Number(levelNumber)
-    });
-  }
-
-  levelButtons.forEach(btn => {
-    btn.addEventListener("click", () => startGameplay(btn.textContent));
-  });
-
-  // ----- RETURN TO MENU -----
-  window.showMainMenuUI = function () {
-    if (!phaserGame) return;
-
-    // Stop any running gameplay scene
-    phaserGame.scene.getScenes(true).forEach(s => s.scene.stop());
-
-    uiContainer.classList.remove("hidden");
-
-    const coins = phaserGame.registry.get("coins");
-    coinsDisplay.textContent = `${coins} 🪙`;
-  };
-
-  // ----- LOGOUT ON CLOSE -----
-  window.addEventListener("beforeunload", async () => {
-    if (window.playerName) {
-      try {
-        await fetch("http://localhost:5000/logout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: window.playerName })
+                if (chatInput) {
+                    const l = (mode || "").toLowerCase();
+                    chatInput.style.display = (l.includes("ai") || l.includes("co")) ? "block" : "none";
+                }
+            });
         });
-      } catch (err) {}
+
+        // -------------------------
+        // 4. LEVEL SELECTION
+        // -------------------------
+        document.querySelectorAll(".lvl-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const levelNum = btn.getAttribute("data-level");
+                if (levelNum) startGameplaySafe(levelNum);
+            });
+        });
+
+        function startGameplaySafe(levelNumber) {
+            console.log(`Starting Level ${levelNumber} in ${selectedMode}...`);
+
+            if (uiContainer) uiContainer.classList.add("hidden");
+            if (gameContainer) gameContainer.style.display = "block";
+
+            if (typeof window.initPhaserGame === "function") {
+                // pass real coins from backend
+                phaserGame = window.initPhaserGame(
+                    window.playerName || "Guest",
+                    playerCoins || 0
+                );
+            }
+
+            setTimeout(() => {
+                const sceneKey = getSceneKey(selectedMode);
+                const scene = phaserGame && phaserGame.scene.getScene(sceneKey);
+                
+                if (scene) {
+                    scene.scene.restart({ mode: selectedMode, level: Number(levelNumber) });
+                }
+            }, 50);
+        }
+
+        function getSceneKey(mode) {
+            if (mode === "ai_coop") return "AICoopScene";
+            if (mode === "ai_race") return "AIRaceScene";
+            return "GameplayScene";
+        }
+
+        // -------------------------
+        // 5. HOME BUTTON LOGIC
+        // -------------------------
+        window.showMainMenuUI = function () {
+            if (phaserGame) {
+                // grab latest coins from registry before destroying
+                const regCoins = phaserGame.registry.get("coins");
+                if (typeof regCoins === "number") {
+                    playerCoins = regCoins;
+                    if (coinDisplay) coinDisplay.textContent = `${playerCoins} 🪙`;
+                }
+
+                phaserGame.destroy(true);
+                phaserGame = null;
+            }
+            
+            if (gameContainer) gameContainer.style.display = "none";
+            if (uiContainer) uiContainer.classList.remove("hidden");
+            
+            if (mainMenuPanel) mainMenuPanel.classList.add("active");
+            if (levelSelectPanel) levelSelectPanel.classList.remove("active");
+            if (chatInput) chatInput.style.display = "none";
+        };
+
+        // 6. BACK BUTTONS (level & modals)
+        document.querySelectorAll(".back-button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const modalContainer = document.getElementById("modal-container");
+                const modalOverlay = document.getElementById("modal-overlay");
+                if (modalContainer) modalContainer.classList.add("hidden");
+                if (modalOverlay) modalOverlay.classList.add("hidden");
+                
+                if (levelSelectPanel && levelSelectPanel.classList.contains("active")) {
+                    levelSelectPanel.classList.remove("active");
+                    if (mainMenuPanel) mainMenuPanel.classList.add("active");
+                }
+            });
+        });
+
+        // 7. TOGGLE SLIDE FOR AUTH
+        const signUpBtn = document.getElementById('signUpBtn');
+        const signInBtn = document.getElementById('signInBtn');
+        const container = document.getElementById('container');
+
+        if(signUpBtn && signInBtn && container){
+            signUpBtn.addEventListener('click', () => container.classList.add("active"));
+            signInBtn.addEventListener('click', () => container.classList.remove("active"));
+        }
+    });
+
+    // --- MODAL LOGIC (Shop, Settings, About) ---
+    const modalContainer = document.getElementById("modal-container");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const shopPanel = document.getElementById("shop-panel");
+    const settingsPanel = document.getElementById("settings-panel");
+    const aboutPanel = document.getElementById("about-panel");
+
+    function openModal(panel) {
+        if (!panel) return;
+        document.querySelectorAll("#modal-container .panel").forEach(p => p.classList.remove("active"));
+        panel.classList.add("active");
+        modalContainer.classList.remove("hidden");
+        modalOverlay.classList.remove("hidden");
     }
-  });
-  </script>
+
+    document.getElementById("shop-btn")?.addEventListener("click", () => openModal(shopPanel));
+    document.getElementById("settings-btn")?.addEventListener("click", () => openModal(settingsPanel));
+    document.getElementById("about-btn")?.addEventListener("click", () => openModal(aboutPanel));
+
+    document.querySelectorAll(".back-button").forEach(btn => {
+        btn.addEventListener("click", () => {
+            modalContainer.classList.add("hidden");
+            modalOverlay.classList.add("hidden");
+        });
+    });
+
+    // --- LOGOUT LOGIC (optional: you can also POST /logout here) ---
+    document.getElementById("logout-btn")?.addEventListener("click", () => {
+        window.playerName = null;
+        
+        if (window._escapeGameInstance) {
+            window._escapeGameInstance.destroy(true);
+            window._escapeGameInstance = null;
+        }
+
+        document.getElementById("ui-container").classList.add("hidden");
+        document.getElementById("game-container").style.display = "none";
+        
+        document.getElementById("auth-wrapper").style.display = "flex"; 
+        
+        document.getElementById("login-form").reset();
+
+        document.getElementById("main-menu").classList.add("active");
+        document.getElementById("level-select-panel").classList.remove("active");
+        
+        console.log("Logged out successfully");
+    });
+
+    // --- PASSWORD EYE TOGGLE ---
+    document.querySelectorAll(".toggle-pass").forEach(icon => {
+        icon.addEventListener("click", () => {
+            const targetId = icon.getAttribute("data-target");
+            const input = document.getElementById(targetId);
+            
+            if (!input) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+                icon.style.color = "#4aa2e9";
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+                icon.style.color = "#888";
+            }
+        });
+    });
+</script>
 </body>
 </html>
