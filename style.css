@@ -140,8 +140,8 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
-  background-color: rgba(0, 0, 0, 0.3);
-  border-bottom: 3px solid #5c3a1b;
+  margin-top: 20px ;
+
 }
 .player-info span {
   background-color: #e58a2b;

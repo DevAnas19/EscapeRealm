@@ -1,0 +1,52 @@
+{
+  "levelWidth": 3000,
+
+  "playerSpawn": { "x": 150, "y": 500 },
+  "aiSpawn": { "x": 200, "y": 500 },
+
+  "platforms": [
+    { "x": 500,  "y": 560, "width": 600, "height": 40, "color": 3074457345618258603 },
+    { "x": 1300, "y": 520, "width": 400, "height": 40, "color": 3074457345618258603 },
+    { "x": 1700, "y": 460, "width": 350, "height": 40, "color": 3074457345618258603 },
+    { "x": 2050, "y": 400, "width": 350, "height": 40, "color": 3074457345618258603 },
+    { "x": 2900, "y": 560, "width": 500, "height": 40, "color": 3074457345618258603 }
+  ],
+
+  "movingPlatforms": [
+    {
+      "x": 900,
+      "y": 520,
+      "width": 150,
+      "height": 40,
+      "minX": 800,
+      "maxX": 1100,
+      "speed": 80,
+      "color": 15066597
+    }
+  ],
+
+  "verticalPlatforms": [
+    {
+      "x": 2500,
+      "y": 500,
+      "width": 200,
+      "height": 40,
+      "minY": 380,
+      "maxY": 520,
+      "speed": 70,
+      "color": 2590667
+    }
+  ],
+
+  "box": null,
+  "key": null,
+
+  "door": { "x": 2900, "y": 500, "width": 60, "height": 100 },
+
+  "switch": [],
+  "bridge": [],
+
+  "fallDetectors": [
+    { "x": 400, "y": 600, "width": 3000, "height": 40 }
+  ]
+}

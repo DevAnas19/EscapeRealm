@@ -1,0 +1,50 @@
+{
+    "levelWidth": 2300,
+
+    "playerSpawn": { "x": 150, "y": 400 },
+
+    "platforms": [
+        { "x": 1150, "y": 500, "width": 2300, "height": 60 }
+    ],
+
+    "box": {
+        "x": 500,
+        "y": 400,
+        "width": 60,
+        "height": 60,
+        "mass": 0.6,
+        "dragX": 250
+    },
+
+    "switch": [
+        { "x": 900, "y": 460, "width": 70, "height": 20 }
+    ],
+
+    "bridge": [
+        {
+            "x": 1200,
+            "y": 480,
+            "width": 250,
+            "height": 40,
+            "initiallyEnabled": false
+        }
+    ],
+
+    "key": {
+        "x": 1500,
+        "y": 440,
+        "width": 40,
+        "height": 40
+    },
+
+    "door": {
+        "x": 2000,
+        "y": 440,
+        "width": 60,
+        "height": 100
+    },
+
+    "fallDetectors": [
+        { "x": 1150, "y": 800, "width": 2500, "height": 70 }
+    ]
+}

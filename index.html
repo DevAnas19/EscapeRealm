@@ -95,11 +95,32 @@
     </div>
   </div>
 
+  <!-- Chat Input -->
+  <input 
+    id="chatInput" 
+    type="text" 
+    placeholder="Type AI command..." 
+    style="
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 8px;
+        border: 2px solid #3498db;
+        outline: none;
+        background: #ffffffcc;
+        z-index: 9999;
+    "
+  >
+
   <!-- Load Game Script -->
   <script type="module" src="game.js"></script>
 
   <script>
-  // === UI ELEMENTS ===
+  // ===== UI ELEMENTS =====
   const uiContainer = document.getElementById("ui-container");
   const usernameDisplay = document.getElementById("player-username");
   const coinsDisplay = document.getElementById("player-coins");
@@ -118,23 +139,20 @@
   const modeButtons = document.querySelectorAll(".mode-button");
   const levelSelectBackButton = document.querySelector("#level-select-panel .back-button");
   const levelButtons = document.querySelectorAll(".level-button");
-  let phaserGame = null;
 
-  // keep track of selected mode (folder name)
-  // default to single_player
+  let phaserGame = null;
   let selectedMode = "single_player";
 
-  // utility: maps UI label → folder name
+  // Map visible mode text → folder name
   function uiModeToFolder(modeLabel) {
-    const label = (modeLabel || "").toLowerCase();
-    if (label.includes("single")) return "single_player";
-    if (label.includes("coop")) return "ai_coop";
-    if (label.includes("player") && label.includes("ai")) return "ai_race";
-    // fallback
+    const l = (modeLabel || "").toLowerCase();
+    if (l.includes("single")) return "single_player";
+    if (l.includes("co-op") || l.includes("coop")) return "ai_coop";
+    if (l.includes("player") && l.includes("ai")) return "ai_race";
     return "single_player";
   }
 
-  // === LOGIN HANDLING ===
+  // ----- LOGIN -----
   const loginBtn = document.getElementById("login-btn");
   const loginScreen = document.getElementById("login-screen");
   const gameContainer = document.getElementById("game-container");
@@ -153,7 +171,7 @@
       const res = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
 
       if (res.ok) {
@@ -164,7 +182,7 @@
         const signupRes = await fetch("http://localhost:5000/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ username, password })
         });
 
         if (signupRes.ok) {
@@ -176,14 +194,13 @@
           loginMessage.textContent = err.message;
         }
       }
-    } catch (error) {
-      console.error("Error:", error);
-      loginMessage.textContent = "Server not responding. Is backend running?";
+    } catch (err) {
+      console.error(err);
+      loginMessage.textContent = "Server not responding.";
     }
   });
 
   function handleLoginSuccess(username, coins) {
-    // expose a handy global: window.playerName (used by your logout)
     window.playerName = username;
 
     loginScreen.style.display = "none";
@@ -197,10 +214,10 @@
     }
   }
 
-  // === MODAL FUNCTIONS ===
-  function openModal(panelElement) {
-    modalContainer.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-    panelElement.classList.add("active");
+  // ----- MODALS -----
+  function openModal(panel) {
+    modalContainer.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    panel.classList.add("active");
     modalOverlay.classList.remove("hidden");
     modalContainer.classList.remove("hidden");
   }
@@ -213,79 +230,85 @@
   shopButton.addEventListener("click", () => openModal(shopPanel));
   aboutButton.addEventListener("click", () => openModal(aboutPanel));
   settingsButton.addEventListener("click", () => openModal(settingsPanel));
-  modalBackButtons.forEach((button) => button.addEventListener("click", closeModal));
+  modalBackButtons.forEach(btn => btn.addEventListener("click", closeModal));
 
-  // === SCREEN NAVIGATION ===
-  function showLevelSelect(modeName) {
-    levelSelectTitle.textContent = modeName;
-    mainMenuPanel.classList.remove("active");
-    levelSelectPanel.classList.add("active");
-  }
-
-  function showMainMenu() {
-    levelSelectPanel.classList.remove("active");
-    mainMenuPanel.classList.add("active");
-  }
-
-  // mode button behavior: set selectedMode and open level select
-  modeButtons.forEach((button) => {
+  // ----- MODE SELECTION -----
+  modeButtons.forEach(button => {
     button.addEventListener("click", () => {
       selectedMode = uiModeToFolder(button.dataset.mode);
-      showLevelSelect(button.dataset.mode);
+      levelSelectTitle.textContent = button.dataset.mode;
+      mainMenuPanel.classList.remove("active");
+      levelSelectPanel.classList.add("active");
     });
   });
-  levelSelectBackButton.addEventListener("click", showMainMenu);
 
-  // === GAME START ===
+  levelSelectBackButton.addEventListener("click", () => {
+    levelSelectPanel.classList.remove("active");
+    mainMenuPanel.classList.add("active");
+  });
+
+  // =====================================================
+  //              FIXED startGameplay()
+  // =====================================================
   function startGameplay(levelNumber) {
+    console.log("Starting mode:", selectedMode);
+
     if (!phaserGame) {
-      console.error("Phaser game not initialized yet.");
+      console.error("Phaser not initialized yet.");
       return;
     }
 
     uiContainer.classList.add("hidden");
 
-    // Pass both mode and level into the scene
-    const gameplayScene = phaserGame.scene.getScene("GameplayScene");
-    if (gameplayScene) {
-      gameplayScene.scene.start("GameplayScene", { mode: selectedMode, level: Number(levelNumber) });
-    } else {
-      // If first run, start the scene via phaser game instance
-      phaserGame.scene.start("GameplayScene", { mode: selectedMode, level: Number(levelNumber) });
-    }
+    const isSingle = selectedMode === "single_player";
+    const isAICoop = selectedMode === "ai_coop";
+    const isAIRace = selectedMode === "ai_race";
+
+    let sceneKey = null;
+
+    if (isSingle) sceneKey = "GameplayScene";
+    if (isAICoop) sceneKey = "AICoopScene";
+    if (isAIRace) sceneKey = "AIRaceScene";
+
+    // STOP all other scenes to prevent overlap
+    phaserGame.scene.getScenes(true).forEach(s => s.scene.stop());
+
+    // START only the correct scene
+    phaserGame.scene.start(sceneKey, {
+      mode: selectedMode,
+      level: Number(levelNumber)
+    });
   }
 
-  levelButtons.forEach((button) => {
-    button.addEventListener("click", () => startGameplay(button.textContent));
+  levelButtons.forEach(btn => {
+    btn.addEventListener("click", () => startGameplay(btn.textContent));
   });
 
-  // === RETURN TO MAIN MENU (GLOBAL) ===
+  // ----- RETURN TO MENU -----
   window.showMainMenuUI = function () {
     if (!phaserGame) return;
-    const gameplayScene = phaserGame.scene.getScene("GameplayScene");
-    if (gameplayScene && gameplayScene.scene.isActive()) {
-      gameplayScene.scene.stop();
-    }
+
+    // Stop any running gameplay scene
+    phaserGame.scene.getScenes(true).forEach(s => s.scene.stop());
+
     uiContainer.classList.remove("hidden");
 
-    const currentCoins = phaserGame.registry.get("coins");
-    coinsDisplay.textContent = `${currentCoins} 🪙`;
+    const coins = phaserGame.registry.get("coins");
+    coinsDisplay.textContent = `${coins} 🪙`;
   };
 
-  // === LOGOUT ON CLOSE ===
+  // ----- LOGOUT ON CLOSE -----
   window.addEventListener("beforeunload", async () => {
     if (window.playerName) {
       try {
         await fetch("http://localhost:5000/logout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: window.playerName }),
+          body: JSON.stringify({ username: window.playerName })
         });
-      } catch (err) {
-        console.warn("Could not update logout status:", err);
-      }
+      } catch (err) {}
     }
   });
-</script>
+  </script>
 </body>
 </html>
