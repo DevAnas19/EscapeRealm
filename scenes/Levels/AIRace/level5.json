@@ -47,6 +47,10 @@
   "bridge": [],
 
   "fallDetectors": [
+<<<<<<< HEAD
     { "x": 400, "y": 600, "width": 3000, "height": 40 }
+=======
+    { "x": 0, "y": 600, "width": 3000, "height": 40 }
+>>>>>>> c708da216d29d8788d664af49d6e03819178b705
   ]
 }

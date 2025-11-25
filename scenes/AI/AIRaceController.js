@@ -7,7 +7,11 @@ export default class AIRaceController {
 
         this.levelData = levelData;
 
+<<<<<<< HEAD
         this.speed = 248;
+=======
+        this.speed = 252;
+>>>>>>> c708da216d29d8788d664af49d6e03819178b705
         this.jumpPower = -475;
 
         this.goalX = levelData.door.x;
