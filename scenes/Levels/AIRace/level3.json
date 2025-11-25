@@ -1,7 +1,7 @@
 {
   "levelWidth": 2500,
 
-  "playerSpawn": { "x": 100, "y": 500 },
+  "playerSpawn": { "x": 200, "y": 500 },
   "aiSpawn": { "x": 150, "y": 500 },
 
   "platforms": [
@@ -24,6 +24,6 @@
   "bridge": [],
 
   "fallDetectors": [
-    { "x": 0, "y": 600, "width": 2500, "height": 40 }
+    { "x": 100, "y": 600, "width": 2500, "height": 40 }
   ]
 }
