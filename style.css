@@ -1,8 +1,3 @@
-/* ==========================================================================
-   ESCAPE REALM - ULTIMATE STYLE SHEET
-   Version: 2.1 (Fixed Layout)
-   ========================================================================== */
-
 /* --------------------------------------------------------------------------
    1. GLOBAL IMPORTS & FONTS
    -------------------------------------------------------------------------- 
@@ -550,48 +545,8 @@ body::before {
   display: flex;
 }
 
-<<<<<<< HEAD
-/* --- Top Navigation Bar --- */
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 30px;
-  margin-top: 20px ;
-
-}
-.player-info span {
-  background-color: #e58a2b;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: 2px solid #5c3a1b;
-  margin-right: 20px;
-  font-size: 16px;
-}
-.nav-buttons button {
-  font-family: "Press Start 2P", cursive;
-  font-size: 14px;
-  color: white;
-  background-color: #e58a2b;
-  border: 2px solid #5c3a1b;
-  border-radius: 10px;
-  padding: 10px 20px;
-  margin-left: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.nav-buttons button:hover {
-  background-color: #ff9d40;
-}
-
-/* --- Mode Selection Buttons --- */
-.mode-selection {
-  display: flex;
-  gap: 20px;
-=======
 #main-menu {
   flex-direction: column;
->>>>>>> 3c15799 (ALL DONE WITH NEW UI)
   justify-content: center;
   align-items: center;
   background: rgba(0, 0, 0, 0.4);
@@ -1194,4 +1149,252 @@ button,
 
 #ui-container > * {
   pointer-events: auto; /* ...but catch them on the menus */
+}
+
+/*dev card */
+.dev-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    color: white;
+}
+
+.dev-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #4aa3ff;
+    border-radius: 12px;
+    padding: 15px;
+    width: 250px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+}
+
+.dev-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 2px solid #4aa3ff;
+}
+
+.dev-name {
+    font-size: 20px;
+    margin: 5px 0;
+}
+
+.dev-role {
+    font-size: 14px;
+    color: #4aa3ff;
+    margin-bottom: 10px;
+}
+
+.dev-desc {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #ddd;
+}
+
+#about-panel .back-button {
+    position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 2000 !important;
+}
+
+.glass-panel > .back-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+/* ============================
+   ABOUT PAGE – NEON GLASS POLISH
+   ============================ */
+
+/* Fade-in animation for whole panel */
+#about-panel .glass-panel {
+    animation: aboutFade 0.35s ease-out;
+}
+@keyframes aboutFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Developer cards polished glass style */
+.dev-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(74, 162, 233, 0.5);
+    box-shadow: 0 0 12px rgba(74, 162, 233, 0.25);
+    transition: 0.25s ease;
+}
+
+/* Hover effect — consistent with game mode cards */
+.dev-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--c-blue);
+    box-shadow: 0 0 18px rgba(74, 162, 233, 0.45);
+}
+
+/* Image frame neon polish */
+.dev-img {
+    border: 2px solid rgba(74, 162, 233, 0.8);
+    box-shadow: 0 0 10px rgba(74, 162, 233, 0.25);
+}
+
+/* Name underline neon highlight */
+.dev-name {
+    position: relative;
+    padding-bottom: 4px;
+}
+.dev-name::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 40%;
+    height: 2px;
+    background: var(--c-blue);
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(74, 162, 233, 0.6);
+    border-radius: 2px;
+}
+
+/* Dev roles subtle glow */
+.dev-role {
+    color: var(--c-blue);
+    text-shadow: 0 0 6px rgba(74, 162, 233, 0.4);
+}
+
+/* Improve spacing */
+.dev-container {
+    margin-top: 25px;
+    gap: 25px;
+}
+
+/* ============================
+   SHOP & SETTINGS – PANEL FADE
+   ============================ */
+
+/* Fade-in animation for shop panel */
+#shop-panel .glass-panel {
+    animation: panelFade 0.35s ease-out;
+}
+
+/* Fade-in animation for settings panel */
+#settings-panel .glass-panel {
+    animation: panelFade 0.35s ease-out;
+}
+
+@keyframes panelFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================
+   FIXED SHOP PANEL (MATCH SIZE)
+   ============================ */
+
+#shop-panel .glass-panel {
+    max-width: 700px !important;
+    padding: 40px 60px !important;
+    min-height: 520px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ============================
+   CLEAN SHOP GRID
+   ============================ */
+
+.shop-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 items per row */
+    gap: 25px;
+    margin-top: 30px;
+    padding: 10px;
+}
+
+/* SHOP CARD */
+.shop-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    transition: 0.25s ease;
+    min-height: 180px;
+}
+
+.shop-item:hover {
+    transform: translateY(-6px);
+    border-color: var(--c-blue, #4aa2e9);
+    box-shadow: 0 0 12px rgba(74,162,233,0.4);
+}
+
+.item-name {
+    margin-top: 10px;
+    font-size: 16px;
+    color: white;
+}
+
+.item-desc {
+    font-size: 13px;
+    color: #ccc;
+    margin: 8px 0 12px;
+}
+
+.item-footer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    align-items: center;
+}
+
+.item-price {
+    font-size: 14px;
+    color: #fbbf24;
+}
+
+/* BUY BUTTON */
+.item-buy-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #4aa2e9;
+    border: none;
+    font-size: 10px;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s;
+}
+
+.item-buy-btn:hover {
+    background: #3a92d9;
+}
+
+/* SHOP TITLE FIX */
+.shop-title {
+    font-family: var(--font-header);
+    font-size: 26px;
+    color: var(--c-blue);
+    text-shadow: 0 0 12px var(--c-blue);
+    margin-bottom: 10px;
+}
+
+.shop-subtitle {
+    margin-bottom: 20px;
+    color: #bbb;
+}
+
+/* SHOP PANEL BACK BUTTON — MATCH ABOUT & SETTINGS */
+#shop-panel .back-button {
+    position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 2000 !important;
 }

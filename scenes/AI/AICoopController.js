@@ -42,7 +42,7 @@ export default class AICoopController {
         if (cmd.includes("follow")) {
             this.state = "follow";
             this.boostReady = false;
-            this._say("Okay! I'm following you!");
+            this._say("Okay! I'm following you! ");
         }
         else if (cmd.includes("stop")) {
             this.state = "idle";

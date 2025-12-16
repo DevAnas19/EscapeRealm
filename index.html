@@ -309,27 +309,100 @@
 
     <div id="modal-overlay" class="hidden"></div>
     <div id="modal-container" class="hidden">
-        <div id="shop-panel" class="panel">
-            <div class="panel-content glass-panel">
-                <button class="back-button">BACK</button>
-                <h1>SHOP</h1>
-                <p>Cybernetics and Skins coming soon.</p>
+<div id="shop-panel" class="panel">
+    <div class="panel-content glass-panel shop-panel">
+
+        <h1 class="shop-title">SHOP</h1>
+        <p class="shop-subtitle">Purchase skins from here.</p>
+
+        <div class="shop-grid">
+<!-- ITEM 1 -->
+<div class="shop-item">
+    <div class="shop-img" style="width:100%; height:120px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:10px;"></div>
+    <h3 class="item-name">Quantum Booster</h3>
+    <div class="item-footer">
+        <span class="item-price">1000 🪙</span>
+        <button class="item-buy-btn">BUY</button>
+    </div>
+</div>
+
+<!-- ITEM 2 -->
+<div class="shop-item">
+    <div class="shop-img" style="width:100%; height:120px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:10px;"></div>
+    <h3 class="item-name">Cyber Shield</h3>
+    <div class="item-footer">
+        <span class="item-price">1500 🪙</span>
+        <button class="item-buy-btn">BUY</button>
+    </div>
+</div>
+
+<!-- ITEM 3 -->
+<div class="shop-item">
+    <div class="shop-img" style="width:100%; height:120px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:10px;"></div>
+    <h3 class="item-name">Neon Drive Core</h3>
+    <div class="item-footer">
+        <span class="item-price">2000 🪙</span>
+        <button class="item-buy-btn">BUY</button>
+    </div>
+</div>
+
+<!-- ITEM 4 -->
+<div class="shop-item">
+    <div class="shop-img" style="width:100%; height:120px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:10px;"></div>
+    <h3 class="item-name">AI Companion Upgrade</h3>
+    <div class="item-footer">
+        <span class="item-price">2500 🪙</span>
+        <button class="item-buy-btn">BUY</button>
+    </div>
+</div>
+        <button class="back-button shop-back">BACK</button>
+    </div>
+</div>
+
+
+
+        </div><div id="about-panel" class="panel">
+    <div class="panel-content glass-panel">
+        <button class="back-button">BACK</button>
+
+        <h1>ABOUT US</h1>
+        <p>EscapeRealm</p>
+
+        <!-- Developer Cards -->
+        <div class="dev-container">
+
+            <div class="dev-card">
+                <img src="/assets/dev/dev1.jpg" class="dev-img">
+                <h2 class="dev-name">Anas</h2>
+                <h3 class="dev-role">Gameplay & Systems Developer</h3>
+                <p class="dev-desc">
+                    Worked on the engine, backend features, gameplay mechanics, coin system,
+                    and AI modes like Co-Op and AI Race. Helped turn ideas into working game systems.
+                </p>
             </div>
-        </div>
-        <div id="about-panel" class="panel">
-            <div class="panel-content glass-panel">
-                <button class="back-button">BACK</button>
-                <h1>SYSTEM INFO</h1>
-                <p>EscapeRealm v2.0</p>
+
+            <div class="dev-card">
+                <img src="/assets/dev/dev2.jpg" class="dev-img">
+                <h2 class="dev-name">Husen</h2>
+                <h3 class="dev-role">Creative & Frontend Developer</h3>
+                <p class="dev-desc">
+                    Created the game concept, mode ideas, level designs, UI/UX, textures,
+                    animations, and visual style. Also contributed in bug fixes and polishing
+                    the final player experience.
+                </p>
             </div>
-        </div>
-        <div id="settings-panel" class="panel">
-            <div class="panel-content glass-panel">
-                <button class="back-button">BACK</button>
-                <h1>SETTINGS</h1>
-                <p>Audio: ON <br> Graphics: ULTRA</p>
-            </div>
-        </div>
+
+        </div> <!-- /dev-container -->
+
+    </div> <!-- /panel-content -->
+</div> <!-- /about-panel -->
+
+<!-- Settings Panel (must be OUTSIDE About Panel) -->
+<div id="settings-panel" class="panel">
+    <div class="panel-content glass-panel">
+        <button class="back-button">BACK</button>
+        <h1>SETTINGS</h1>
+        <p>Audio: ON <br> Graphics: ULTRA</p>
     </div>
 </div>
 

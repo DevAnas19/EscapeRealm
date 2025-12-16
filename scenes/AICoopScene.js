@@ -4,25 +4,42 @@ export default class AICoopScene extends Phaser.Scene {
     constructor() {
         super({ key: 'AICoopScene' });
 
+        // Physics bodies (hitboxes)
         this.player = null;
         this.aiPartner = null;
 
+        // Visual sprites (overlays)
+        this.playerSprite = null;
+        this.aiSprite = null;
+
+        // Objects
         this.platforms = null;
         this.bridgePieces = [];
         this.box = null;
         this.keyObj = null;
+        this.keySprite = null;
         this.door = null;
+        this.doorSprite = null;
         this.switchObj = [];
-
-        this.levelData = null;
         this.fallDetectors = [];
 
-        // timer / UI
+        // Level / state
+        this.levelData = null;
+        this.level = 1;
+        this.hasKey = false;
+        this._doorOpening = false;
+
+        // Timer / UI
         this.startTime = 0;
         this.elapsedText = null;
         this.timerRunning = false;
 
+        // Input
         this.cursors = null;
+        this.keys = null;
+
+        // AI
+        this.aiBrain = null;
     }
 
     init(data) {
@@ -30,10 +47,51 @@ export default class AICoopScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("background", "assets/background.png");
+        // Load background if not already loaded
+        if (!this.textures.exists("background")) {
+            this.load.image("background", "assets/background.png");
+        }
+
+        // Character images (animated frames are single images here)
+        const images = ["RS", "LS", "RW", "LW", "RJ", "LJ"];
+        images.forEach(key => {
+            if (!this.textures.exists(key)) {
+                this.load.image(key, `assets/sprites/${key}.png`);
+            }
+        });
+
+        // Items and animations
+        if (!this.textures.exists("key_anim")) {
+            this.load.spritesheet("key_anim", "assets/items/KeyFly.png", { frameWidth: 64, frameHeight: 64 });
+        }
+        if (!this.textures.exists("door_anim")) {
+            this.load.spritesheet("door_anim", "assets/items/Door.png", { frameWidth: 64, frameHeight: 64 });
+        }
+
+        // Tiles / objects
+        if (!this.textures.exists("ground")) {
+            this.load.image("ground", "assets/tiles/ground.png");
+        }
+        if (!this.textures.exists("box")) {
+            this.load.image("box", "assets/tiles/box.png");
+        }
+        if (!this.textures.exists("moving")) {
+            this.load.image("moving", "assets/tiles/moving.png");
+        }
+        if (!this.textures.exists("bridge")) {
+            this.load.image("bridge", "assets/tiles/bridge.png");
+        }
+        if (!this.textures.exists("switch")) {
+            this.load.spritesheet("switch", "assets/tiles/switch.png", { frameWidth: 60, frameHeight: 20 });
+        }
     }
 
     create() {
+        // Reset state
+        this.hasKey = false;
+        this._doorOpening = false;
+        this.timerRunning = false;
+
         const levelPath = `scenes/Levels/AICoop/level${this.level}.json`;
 
         fetch(levelPath)
@@ -47,10 +105,18 @@ export default class AICoopScene extends Phaser.Scene {
             })
             .catch(err => {
                 console.error(err);
-                this.add.text(20, 20, "Failed to load AI-Coop level", {
-                    fontSize: "20px",
-                    fill: "#ff0000"
-                });
+                this.add.text(
+                    50,
+                    50,
+                    `ERROR: Could not load level.
+Looking for: ${levelPath}
+Check your folder names!`,
+                    {
+                        fontSize: "20px",
+                        fill: "#ff0000",
+                        backgroundColor: "#000000"
+                    }
+                ).setScrollFactor(0);
             });
     }
 
@@ -58,8 +124,7 @@ export default class AICoopScene extends Phaser.Scene {
     // LEVEL SETUP
     // =====================================================
     _setupLevel() {
-        const L = this.levelData;
-
+        const L = this.levelData || {};
         const levelWidth = L.levelWidth || 3000;
         const levelHeight = this.scale.height;
 
@@ -74,247 +139,303 @@ export default class AICoopScene extends Phaser.Scene {
         }
 
         // -----------------------------
-        // PLAYER
+        // PLAYER (physics hitbox) + sprite overlay
         // -----------------------------
         const spawn = L.playerSpawn || { x: 100, y: 100 };
 
+        // physics hitbox (rectangle) - stable behavior like first file
         this.player = this.add.rectangle(spawn.x, spawn.y, 50, 50, 0xff0000);
         this.physics.add.existing(this.player);
         this.player.body.setCollideWorldBounds(true);
         this.player.body.setGravityY(500);
+        this.player.setVisible(false); // hide physics rectangle in normal play (debugging: set true)
+
+        // sprite overlay
+        this.playerSprite = this.add.sprite(spawn.x, spawn.y, "RS").setOrigin(0.5);
+        this.playerSprite.setDisplaySize(50, 50);
+        this.playerSprite.facing = "right";
 
         // -----------------------------
-        // AI PARTNER
+        // AI PARTNER (hitbox + sprite)
         // -----------------------------
         this.aiPartner = this.add.rectangle(spawn.x + 60, spawn.y, 50, 50, 0x00ff00);
         this.physics.add.existing(this.aiPartner);
         this.aiPartner.body.setCollideWorldBounds(true);
         this.aiPartner.body.setGravityY(500);
+        this.aiPartner.setVisible(false);
+
+        this.aiSprite = this.add.sprite(spawn.x + 60, spawn.y, "RS").setOrigin(0.5);
+        this.aiSprite.setDisplaySize(50, 50);
+        this.aiSprite.setTint(0x55ff55);
+        this.aiSprite.facing = "right";
 
         // -----------------------------
-        // PLATFORMS
+        // PLATFORMS (static group) + tiling visuals
         // -----------------------------
-        this.platforms = this.physics.add.staticGroup();
+       this.platforms = this.physics.add.staticGroup();
+(L.platforms || []).forEach(p => {
+    const r = this.add.rectangle(p.x, p.y, p.width, p.height, 0x000000, 0); // invisible physics hitbox
+    this.physics.add.existing(r, true);
+    this.platforms.add(r);
 
-        (L.platforms || []).forEach(p => {
-            const r = this.add.rectangle(p.x, p.y, p.width, p.height, p.color ?? 0x2ecc71);
-            this.physics.add.existing(r, true);
-            this.platforms.add(r);
+
+            // Tiling visuals if ground texture exists
+            if (this.textures.exists("ground")) {
+                const tileW = 32;
+                const tilesCount = Math.ceil(p.width / tileW);
+                const tileY = p.y - p.height / 2 + tileW / 2;
+                const leftStart = p.x - p.width / 2 + tileW / 2;
+                for (let i = 0; i < tilesCount; i++) {
+                    this.add.image(leftStart + i * tileW, tileY, "ground").setOrigin(0.5);
+                }
+            }
         });
 
         // -----------------------------
-        // FALL DETECTORS
-        // -----------------------------
-        this.fallDetectors = [];
-
-        (L.fallDetectors || []).forEach(fd => {
-            const r = this.add.rectangle(fd.x, fd.y, fd.width, fd.height, 0xff0000);
-            this.physics.add.existing(r, true);
-            r.setVisible(false);           // invisible but active
-            this.fallDetectors.push(r);
-        });
-
-        // Add overlaps for restart
-        this.fallDetectors.forEach(fd => {
-            if (this.player)
-                this.physics.add.overlap(this.player, fd, () => this.scene.restart(this.scene.settings.data));
-
-            if (this.aiPartner)
-                this.physics.add.overlap(this.aiPartner, fd, () => this.scene.restart(this.scene.settings.data));
-
-            if (this.box)
-                this.physics.add.overlap(this.box, fd, () => this.scene.restart(this.scene.settings.data));
-        });
-
-
-        // Collisions
-        this.physics.add.collider(this.player, this.platforms);
-        this.physics.add.collider(this.aiPartner, this.platforms);
-        this.physics.add.collider(this.player, this.aiPartner);
-        
-
-        // -----------------------------
-        // BOX
+        // BOX (physics sprite if available, else rectangle)
         // -----------------------------
         if (L.box) {
-            this.box = this.add.rectangle(L.box.x, L.box.y, L.box.width, L.box.height, 0x964b00);
-            this.physics.add.existing(this.box);
-
-            const body = this.box.body;
-            body.setCollideWorldBounds(true);
-
-            // SLIPPERY SETTINGS (LOW FRICTION)
-            body.setMass(0.7);     // ← makes box easier to push
-            body.setDragX(550);     // ← reduces friction (slides more)
-            body.setBounce(0);
-
-            // collisions
-            this.physics.add.collider(this.box, this.platforms);
-            this.physics.add.collider(this.player, this.box);
-            this.physics.add.collider(this.aiPartner, this.box);
+            if (this.textures.exists("box")) {
+                this.box = this.add.sprite(L.box.x, L.box.y, "box");
+                this.physics.add.existing(this.box);
+                this.box.body.setCollideWorldBounds(true);
+                this.box.body.setMass(0.7);
+                this.box.body.setDragX(550);
+                this.box.body.setBounce(0);
+                this.box.body.setSize(50, 50, true);
+            } else {
+                // fallback to rectangle hitbox
+                this.box = this.add.rectangle(L.box.x, L.box.y, L.box.width || 50, L.box.height || 50, 0x964b00);
+                this.physics.add.existing(this.box);
+                const bbody = this.box.body;
+                bbody.setCollideWorldBounds(true);
+                bbody.setMass(0.7);
+                bbody.setDragX(550);
+                bbody.setBounce(0);
+            }
         }
 
-
         // -----------------------------
-        // KEY
+        // KEY (invisible physics + sprite animation)
         // -----------------------------
         if (L.key) {
-            this.keyObj = this.add.rectangle(L.key.x, L.key.y, L.key.width, L.key.height, 0xf1c40f);
+            this.keyObj = this.add.rectangle(L.key.x, L.key.y, L.key.width || 30, L.key.height || 30, 0xf1c40f);
             this.physics.add.existing(this.keyObj);
             this.keyObj.body.setAllowGravity(false);
-            this.keyObj.body.setImmovable(true);
+            this.keyObj.setVisible(false); // physics body hidden, sprite shows visual
+
+            if (this.textures.exists("key_anim")) {
+                this.keySprite = this.add.sprite(L.key.x, L.key.y, "key_anim");
+                this.keySprite.setScale(1.3);
+                if (!this.anims.exists("key_spin")) {
+                    this.anims.create({
+                        key: "key_spin",
+                        frames: this.anims.generateFrameNumbers("key_anim", { start: 0, end: 3 }),
+                        frameRate: 8,
+                        repeat: -1
+                    });
+                }
+                this.keySprite.play("key_spin");
+            } else {
+                // fallback visible rectangle for the player to see
+                this.keyObj.setVisible(true);
+            }
         }
 
         // -----------------------------
-        // DOOR
+        // DOOR (static body + animated sprite)
         // -----------------------------
         if (L.door) {
-            this.door = this.add.rectangle(L.door.x, L.door.y, L.door.width, L.door.height, 0x2980b9);
+            this.door = this.add.rectangle(L.door.x, L.door.y, L.door.width || 50, L.door.height || 80, 0x2980b9);
             this.physics.add.existing(this.door, true);
-        }
+            this.door.setVisible(false);
 
-        // -------- KEY PICKUP --------
-        this.hasKey = false;
-
-        if (this.keyObj) {
-            this.physics.add.overlap(this.player, this.keyObj, () => {
-                this.keyObj.destroy();
-                this.keyObj = null;
-                this.hasKey = true;
-            });
-
-            this.physics.add.overlap(this.aiPartner, this.keyObj, () => {
-                this.keyObj.destroy();
-                this.keyObj = null;
-                this.hasKey = true;
-                console.log("AI: I got the key!");
-            });
-        }
-
-        // ----- DOOR OVERLAP -----
-        if (this.door) {
-            this.physics.add.overlap(this.player, this.door, () => {
-                if (this.hasKey) this._onLevelComplete();
-            });
-
-            this.physics.add.overlap(this.aiPartner, this.door, () => {
-                if (this.hasKey) this._onLevelComplete();
-            });
+            if (this.textures.exists("door_anim")) {
+                this.doorSprite = this.add.sprite(L.door.x, L.door.y, "door_anim");
+                this.doorSprite.setDisplaySize(L.door.width ? L.door.width * 2 : 100, L.door.height ? L.door.height * 1.5 : 120);
+                if (!this.anims.exists("door_idle")) {
+                    this.anims.create({
+                        key: "door_idle",
+                        frames: this.anims.generateFrameNumbers("door_anim", { start: 0, end: 8 }),
+                        frameRate: 8,
+                        repeat: -1
+                    });
+                }
+                if (!this.anims.exists("door_open")) {
+                    this.anims.create({
+                        key: "door_open",
+                        frames: this.anims.generateFrameNumbers("door_anim", { start: 9, end: 13 }),
+                        frameRate: 20,
+                        repeat: 0
+                    });
+                }
+                this.doorSprite.play("door_idle");
+            } else {
+                // fallback visible rectangle
+                this.door.setVisible(true);
+            }
         }
 
         // -----------------------------
-        // SWITCH
+        // SWITCHES & BRIDGES
         // -----------------------------
-        this.switchObj = [];
-        (L.switch || []).forEach(sw => {
-            const s = this.add.rectangle(sw.x, sw.y, sw.width, sw.height, 0x7f8c8d);
-            this.physics.add.existing(s, true);
-            this.switchObj.push(s);
-        });
-
-        // -------- BRIDGE PIECES --------
         this.bridgePieces = [];
         (L.bridge || []).forEach(b => {
-            const r = this.add.rectangle(b.x, b.y, b.width, b.height, 0x95a5a6);
-            this.physics.add.existing(r, true);
+            // prefer tileSprite for visuals if bridge texture exists
+            let r;
+            if (this.textures.exists("bridge")) {
+                r = this.add.tileSprite(b.x, b.y, b.width, b.height, "bridge");
+                this.physics.add.existing(r, true);
+            } else {
+                r = this.add.rectangle(b.x, b.y, b.width, b.height, 0x95a5a6);
+                this.physics.add.existing(r, true);
+            }
 
             if (r.body) {
                 r.body.enable = b.initiallyEnabled ?? false;
             }
             r.setVisible(b.initiallyEnabled ?? false);
-
             this.bridgePieces.push(r);
         });
 
+        this.switchObj = [];
+        (L.switch || []).forEach(sw => {
+            // switch physics object (static)
+            const s = this.add.rectangle(sw.x, sw.y, sw.width, sw.height, 0x7f8c8d);
+            this.physics.add.existing(s, true);
+            this.switchObj.push(s);
+
+            // if spritesheet exists we could animate the switch later (not required now)
+        });
+
         // -----------------------------
-        // BRIDGE COLLISIONS
+        // COLLISIONS
         // -----------------------------
+        // Player/AI <-> platforms
+        this.physics.add.collider(this.player, this.platforms);
+        this.physics.add.collider(this.aiPartner, this.platforms);
+        this.physics.add.collider(this.player, this.aiPartner);
+
+        // Player/AI/Box <-> bridge pieces
         this.bridgePieces.forEach(bp => {
             if (bp && bp.body) {
-
-                // Player ↔ Bridge
                 this.physics.add.collider(this.player, bp);
-
-                // AI ↔ Bridge
                 this.physics.add.collider(this.aiPartner, bp);
-
-                // Box ↔ Bridge
-                if (this.box)
-                    this.physics.add.collider(this.box, bp);
+                if (this.box) this.physics.add.collider(this.box, bp);
             }
         });
 
+        // Box collisions with platforms and characters
+        if (this.box) {
+            this.physics.add.collider(this.box, this.platforms);
+            this.physics.add.collider(this.player, this.box);
+            this.physics.add.collider(this.aiPartner, this.box);
+        }
 
-        // HOME button
+        // -----------------------------
+        // FALL DETECTORS + restart overlaps
+        // -----------------------------
+        (L.fallDetectors || []).forEach(fd => {
+            const r = this.add.rectangle(fd.x, fd.y, fd.width, fd.height, 0xff0000);
+            this.physics.add.existing(r, true);
+            r.setVisible(false);
+            this.fallDetectors.push(r);
+
+            const reset = () => this.scene.restart(this.scene.settings.data);
+            this.physics.add.overlap(this.player, r, reset);
+            this.physics.add.overlap(this.aiPartner, r, reset);
+            if (this.box) this.physics.add.overlap(this.box, r, reset);
+        });
+
+        // -----------------------------
+        // KEY PICKUP logic
+        // -----------------------------
+        if (this.keyObj) {
+            const pickupKey = () => {
+                if (this.keyObj) {
+                    this.keyObj.destroy();
+                    this.keyObj = null;
+                }
+                if (this.keySprite) {
+                    this.keySprite.destroy();
+                    this.keySprite = null;
+                }
+                this.hasKey = true;
+            };
+            this.physics.add.overlap(this.player, this.keyObj, pickupKey);
+            this.physics.add.overlap(this.aiPartner, this.keyObj, pickupKey);
+        }
+
+        // -----------------------------
+        // DOOR check logic
+        // -----------------------------
+        if (this.door) {
+            const checkDoor = () => {
+                if (this.hasKey && !this._doorOpening) {
+                    this._doorOpening = true;
+                    if (this.doorSprite) {
+                        this.doorSprite.play("door_open");
+                    }
+                    this.time.delayedCall(500, () => this._onLevelComplete());
+                }
+            };
+            this.physics.add.overlap(this.player, this.door, checkDoor);
+            this.physics.add.overlap(this.aiPartner, this.door, checkDoor);
+        }
+
+        // -----------------------------
+        // SWITCH → BRIDGE logic handled in update()
+        // -----------------------------
+
+        // -----------------------------
+        // UI Buttons + Camera + Input
+        // -----------------------------
+        this._createUIButtons();
+        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keys = this.input.keyboard.addKeys("W,A,S,D,SPACE");
+
+        this.startTime = this.time.now;
+        this.timerRunning = true;
+        this.elapsedText = this.add.text(this.scale.width / 2, 30, "0.0s", { fontSize: "28px", fill: "#000000" }).setScrollFactor(0);
+
+        // AI controller (uses physics bodies)
+        this.aiBrain = new AICoopController(this, this.aiPartner, this.player);
+    }
+
+    _createUIButtons() {
         const homeBtn = this.add.text(60, 40, "Home", {
             fontSize: "22px",
             fill: "#fff",
             backgroundColor: "#3498db",
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
-        })
-        .setScrollFactor(0)
-        .setInteractive();
+        }).setScrollFactor(0).setInteractive();
 
         homeBtn.on("pointerdown", () => {
-            if (window.showMainMenuUI) {
-                window.showMainMenuUI(); // Go back to the main menu
-            }
+            if (window.showMainMenuUI) window.showMainMenuUI();
         });
 
-        // RESTART button
         const restartBtn = this.add.text(160, 40, "⟳", {
             fontSize: "22px",
             fill: "#fff",
             backgroundColor: "#e74c3c",
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
-        })
-        .setScrollFactor(0)
-        .setInteractive();
+        }).setScrollFactor(0).setInteractive();
 
-        restartBtn.on("pointerdown", () => {
-            this.scene.restart(this.scene.settings.data); // Restart level
-        });
-
-
-        // -----------------------------
-        // CAMERA
-        // -----------------------------
-        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-
-        // -----------------------------
-        // INPUT
-        // -----------------------------
-        this.cursors = this.input.keyboard.createCursorKeys();
-
-        // -----------------------------
-        // TIMER UI
-        // -----------------------------
-        this.startTime = this.time.now;
-        this.timerRunning = true;
-
-        this.elapsedText = this.add.text(
-            this.scale.width / 2,
-            30,
-            "0.0s",
-            { fontSize: "28px", fill: "#000000" }
-        ).setScrollFactor(0);
-
-        // -----------------------------
-        // AI CONTROLLER
-        // -----------------------------
-        this.aiBrain = new AICoopController(this, this.aiPartner, this.player);
+        restartBtn.on("pointerdown", () => this.scene.restart(this.scene.settings.data));
     }
 
     // =====================================================
     // UPDATE LOOP
     // =====================================================
     update() {
-        // AI brain
+        // AI update
         if (this.aiBrain) {
             this.aiBrain.update();
         }
 
-        // Player movement only runs if body exists
+        // Ensure physics body exists
         if (!this.player || !this.player.body) return;
 
         const speed = 250;
@@ -322,27 +443,29 @@ export default class AICoopScene extends Phaser.Scene {
 
         this.player.body.setVelocityX(0);
 
-        if (this.cursors) {
-            if (this.cursors.left.isDown) {
-                this.player.body.setVelocityX(-speed);
-            } else if (this.cursors.right.isDown) {
-                this.player.body.setVelocityX(speed);
-            }
-
-            if (this.cursors.up.isDown && this.player.body.blocked.down) {
-                this.player.body.setVelocityY(jumpSpeed);
-            }
+        // Movement: arrow keys or WASD
+        if (this.cursors.left.isDown || (this.keys && this.keys.A.isDown)) {
+            this.player.body.setVelocityX(-speed);
+        } else if (this.cursors.right.isDown || (this.keys && this.keys.D.isDown)) {
+            this.player.body.setVelocityX(speed);
         }
 
-        // TIMER UPDATE
+        const isJumpPressed = this.cursors.up.isDown || (this.keys && this.keys.W.isDown) || (this.keys && this.keys.SPACE.isDown);
+        if (isJumpPressed && this.player.body.blocked.down) {
+            this.player.body.setVelocityY(jumpSpeed);
+        }
+
+        // Update sprite overlay positions + animation frames
+        this._updateSpriteVisuals(this.player, this.playerSprite);
+        this._updateSpriteVisuals(this.aiPartner, this.aiSprite);
+
+        // Timer UI
         if (this.timerRunning && this.elapsedText) {
             const elapsed = (this.time.now - this.startTime) / 1000;
             this.elapsedText.setText(`${elapsed.toFixed(1)}s`);
         }
 
-        // =============================
-        // SWITCH → ENABLE BRIDGE
-        // =============================
+        // SWITCHES → ENABLE BRIDGE
         if (this.switchObj && this.switchObj.length > 0) {
             let anySwitchPressed = false;
 
@@ -382,14 +505,35 @@ export default class AICoopScene extends Phaser.Scene {
             });
 
             this.bridgePieces.forEach(bp => {
-                if (anySwitchPressed) {
-                    bp.body.enable = true;
-                    bp.setVisible(true);
-                } else {
-                    bp.body.enable = false;
-                    bp.setVisible(false);
+                if (bp && bp.body) {
+                    bp.body.enable = anySwitchPressed;
                 }
+                bp.setVisible(anySwitchPressed);
             });
+        }
+    }
+
+    _updateSpriteVisuals(physBody, visualSprite) {
+        if (!physBody || !visualSprite || !physBody.body) return;
+
+        // Sync sprite to physics body
+        visualSprite.x = physBody.x;
+        visualSprite.y = physBody.y;
+
+        const velX = physBody.body.velocity.x || 0;
+        const onGround = physBody.body.blocked.down;
+        const deadzone = 10;
+
+        if (velX > deadzone) visualSprite.facing = "right";
+        else if (velX < -deadzone) visualSprite.facing = "left";
+
+        let desiredKey = null;
+        if (!onGround) desiredKey = visualSprite.facing === "right" ? "RJ" : "LJ";
+        else if (Math.abs(velX) > deadzone) desiredKey = visualSprite.facing === "right" ? "RW" : "LW";
+        else desiredKey = visualSprite.facing === "right" ? "RS" : "LS";
+
+        if (visualSprite.texture.key !== desiredKey && this.textures.exists(desiredKey)) {
+            visualSprite.setTexture(desiredKey);
         }
     }
 
@@ -400,7 +544,7 @@ export default class AICoopScene extends Phaser.Scene {
         // STOP TIMER
         this.timerRunning = false;
 
-        // Stop movement
+        // Disable physics movement
         if (this.player && this.player.body) {
             this.player.body.setVelocity(0, 0);
             this.player.body.moves = false;
@@ -411,7 +555,6 @@ export default class AICoopScene extends Phaser.Scene {
         }
 
         const elapsed = (this.time.now - this.startTime) / 1000;
-
         let stars = 1;
         if (elapsed < 90) stars = 3;
         else if (elapsed < 150) stars = 2;
