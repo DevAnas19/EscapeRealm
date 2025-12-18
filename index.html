@@ -408,12 +408,16 @@
 
 <script type="module" src="game.js"></script>
 <script>
+    // ==============================
+    // ✅ LIVE BACKEND CONFIG
+    // ==============================
+    const API_BASE_URL = "https://escaperealm.onrender.com";
+
     // --- GLOBAL VARIABLES ---
     let phaserGame = null;
     let selectedMode = "single_player";
-    let playerCoins = 0; // <-- synced with backend + game
+    let playerCoins = 0;
 
-    // --- UTILS ---
     window.uiModeToFolder = function(modeLabel) {
         const l = (modeLabel || "").toLowerCase();
         if (l.includes("single")) return "single_player";
@@ -423,115 +427,91 @@
     };
 
     document.addEventListener("DOMContentLoaded", () => {
-        console.log("EscapeRealm UI Loaded");
 
-        // UI Elements
         const authWrapper = document.getElementById('auth-wrapper');
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
-        
+
         const uiContainer = document.getElementById("ui-container");
         const gameContainer = document.getElementById("game-container");
         const mainMenuPanel = document.getElementById("main-menu");
         const levelSelectPanel = document.getElementById("level-select-panel");
-        const chatInput = document.getElementById("chatInput");
 
         const loginMessage = document.getElementById("login-message");
         const signupMessage = document.getElementById("signup-message");
         const userDisplay = document.getElementById("player-username");
         const coinDisplay = document.getElementById("player-coins");
 
-        // -------------------------
-        // 1. LOGIN LOGIC (BACKEND)
-        // -------------------------
-        if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const username = document.getElementById('login-username').value.trim();
-                const password = document.getElementById('login-password').value.trim();
+        // =========================
+        // LOGIN
+        // =========================
+        loginForm?.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-                if (!username || !password) {
-                    if (loginMessage) loginMessage.textContent = "Please enter username and password.";
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    loginMessage.textContent = data.message || "Login failed";
                     return;
                 }
 
-                try {
-                    const res = await fetch("http://localhost:5000/login", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ username, password }),
-                    });
+                handleLoginSuccess(data.username, data.coins);
+            } catch (err) {
+                loginMessage.textContent = "Server not responding";
+            }
+        });
 
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (loginMessage) loginMessage.textContent = "";
-                        handleLoginSuccess(data.username || username, data.coins ?? 0);
-                    } else {
-                        const err = await res.json().catch(() => ({}));
-                        if (loginMessage) {
-                            loginMessage.textContent = err.message || "Invalid username or password.";
-                        }
-                    }
-                } catch (error) {
-                    console.error("Login error:", error);
-                    if (loginMessage) loginMessage.textContent = "Server not responding. Is backend running?";
-                }
-            });
-        }
-        
-        // -------------------------
-        // 2. SIGNUP LOGIC (BACKEND)
-        // -------------------------
-        if (signupForm) {
-            signupForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const username = document.getElementById('signup-username').value.trim();
-                const password = document.getElementById('signup-password').value.trim();
-                const email = document.getElementById('signup-email').value.trim();
+        // =========================
+        // SIGNUP
+        // =========================
+        signupForm?.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-                if (!username || !password) {
-                    if (signupMessage) signupMessage.textContent = "Username and password are required.";
+            const username = document.getElementById("signup-username").value.trim();
+            const password = document.getElementById("signup-password").value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/signup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    signupMessage.textContent = data.message || "Signup failed";
                     return;
                 }
 
-                try {
-                    const res = await fetch("http://localhost:5000/signup", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ username, password, email }),
-                    });
+                handleLoginSuccess(data.username, data.coins);
+            } catch (err) {
+                signupMessage.textContent = "Server not responding";
+            }
+        });
 
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (signupMessage) signupMessage.textContent = "Account created! Logging in...";
-                        handleLoginSuccess(username, data.coins ?? 0);
-                    } else {
-                        const err = await res.json().catch(() => ({}));
-                        if (signupMessage) {
-                            signupMessage.textContent = err.message || "Signup failed.";
-                        }
-                    }
-                } catch (error) {
-                    console.error("Signup error:", error);
-                    if (signupMessage) signupMessage.textContent = "Server not responding. Is backend running?";
-                }
-            });
-        }
-
-        // -------------------------
-        // LOGIN SUCCESS HANDLER
-        // -------------------------
+        // =========================
+        // LOGIN SUCCESS
+        // =========================
         function handleLoginSuccess(username, coins) {
+            playerCoins = coins ?? 0;
             window.playerName = username;
-            playerCoins = coins || 0;
 
-            if (authWrapper) authWrapper.style.display = 'none';
-            if (uiContainer) uiContainer.classList.remove("hidden");
-            
-            if (userDisplay) userDisplay.textContent = username;
-            if (coinDisplay) coinDisplay.textContent = `${playerCoins} 🪙`;
+            authWrapper.style.display = "none";
+            uiContainer.classList.remove("hidden");
 
-            if (gameContainer) gameContainer.style.display = 'none';
+            userDisplay.textContent = username;
+            coinDisplay.textContent = `${playerCoins} 🪙`;
         }
 
         // -------------------------
