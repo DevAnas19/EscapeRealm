@@ -4,55 +4,76 @@ const { MongoClient } = require("mongodb");
 const cors = require("cors");
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-// === MongoDB Connection ===
+// ================== MIDDLEWARE ==================
+app.use(express.json());
+
+// ✅ CORS (safe for now, can restrict later)
+app.use(cors({
+    origin: "*"
+}));
+
+// ================== MONGODB CONNECTION ==================
 const client = new MongoClient(process.env.MONGO_URI);
 let usersCollection;
 
 async function connectDB() {
     try {
         await client.connect();
-        const db = client.db("EscapeRealmDB"); // database name
-        usersCollection = db.collection("users"); // collection name
-        console.log("✅ Connected to MongoDB");
+        const db = client.db("EscapeRealmDB");
+        usersCollection = db.collection("users");
+        console.log("✅ Connected to MongoDB Atlas");
     } catch (err) {
-        console.error("❌ DB connection error:", err);
+        console.error("❌ MongoDB connection error:", err);
     }
 }
+
 connectDB();
 
-// === Signup API ===
+// ================== HELPER ==================
+function checkDB(res) {
+    if (!usersCollection) {
+        res.status(503).json({ message: "Database not ready" });
+        return false;
+    }
+    return true;
+}
+
+// ================== SIGNUP ==================
 app.post("/signup", async (req, res) => {
+    if (!checkDB(res)) return;
+
     const { username, password } = req.body;
 
     if (!username || !password) {
         return res.status(400).json({ message: "Missing fields" });
     }
 
-    // check if user already exists
     const existingUser = await usersCollection.findOne({ username });
     if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
     }
 
-    // insert new user with default status offline
     await usersCollection.insertOne({
         username,
-        password,
-        status: "offline", // default status when first created
-        lastLogin: null,   // no login yet
-        loginHistory: [],  // empty login history
-        coins: 0           // ✅ initialize coins field with 0
+        password,           // ⚠️ plain text (ok for now)
+        status: "offline",
+        lastLogin: null,
+        loginHistory: [],
+        coins: 0
     });
 
-    // ✅ also return coins + username so frontend can use immediately
-    res.status(201).json({ message: "User created successfully", username, coins: 0 });
+    res.status(201).json({
+        message: "User created successfully",
+        username,
+        coins: 0
+    });
 });
 
-// === Login API ===
+// ================== LOGIN ==================
 app.post("/login", async (req, res) => {
+    if (!checkDB(res)) return;
+
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -67,25 +88,25 @@ app.post("/login", async (req, res) => {
 
     const now = new Date();
 
-    // update user status and add login record
     await usersCollection.updateOne(
         { username },
         {
-            $set: { lastLogin: now, status: "online" }, // mark user online
-            $push: { loginHistory: { date: now, status: "online" } } // keep track of logins
+            $set: { status: "online", lastLogin: now },
+            $push: { loginHistory: { date: now, status: "online" } }
         }
     );
 
-    // ✅ return username + coins so frontend can display balance immediately
-    res.json({ 
-        message: "Login successful", 
-        username: user.username, 
-        coins: user.coins !== undefined ? user.coins : 0 // ✅ make sure coins always exist
+    res.json({
+        message: "Login successful",
+        username: user.username,
+        coins: user.coins ?? 0
     });
 });
 
-// === Logout API ===
+// ================== LOGOUT ==================
 app.post("/logout", async (req, res) => {
+    if (!checkDB(res)) return;
+
     const { username } = req.body;
     if (!username) {
         return res.status(400).json({ message: "Missing username" });
@@ -93,7 +114,6 @@ app.post("/logout", async (req, res) => {
 
     const now = new Date();
 
-    // set user offline and log it
     await usersCollection.updateOne(
         { username },
         {
@@ -102,22 +122,21 @@ app.post("/logout", async (req, res) => {
         }
     );
 
-    res.json({ message: "User is now offline" });
+    res.json({ message: "User logged out" });
 });
 
-// === Update Coins API ===
-// This will be called whenever player earns/spends coins in the game
+// ================== UPDATE COINS ==================
 app.post("/update-coins", async (req, res) => {
+    if (!checkDB(res)) return;
+
     const { username, coins } = req.body;
 
     if (!username || coins === undefined) {
         return res.status(400).json({ message: "Missing username or coins" });
     }
 
-    // ✅ ensure coins is always stored as a number
     const numericCoins = Number(coins);
 
-    // ✅ update user's coin balance in DB
     const result = await usersCollection.updateOne(
         { username },
         { $set: { coins: numericCoins } }
@@ -127,12 +146,17 @@ app.post("/update-coins", async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: "Coins updated successfully", username, coins: numericCoins });
+    res.json({
+        message: "Coins updated successfully",
+        username,
+        coins: numericCoins
+    });
 });
 
-// === Get Coins API ===
-// Useful if you want to fetch only coins (optional)
+// ================== GET COINS ==================
 app.get("/coins/:username", async (req, res) => {
+    if (!checkDB(res)) return;
+
     const { username } = req.params;
 
     const user = await usersCollection.findOne({ username });
@@ -140,10 +164,20 @@ app.get("/coins/:username", async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ username, coins: user.coins !== undefined ? user.coins : 0 });
+    res.json({
+        username,
+        coins: user.coins ?? 0
+    });
 });
 
-// === Start Server ===
-app.listen(process.env.PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${process.env.PORT}`);
+// ================== HEALTH CHECK (OPTIONAL) ==================
+app.get("/", (req, res) => {
+    res.send("🚀 EscapeRealm API is running");
+});
+
+// ================== START SERVER ==================
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
