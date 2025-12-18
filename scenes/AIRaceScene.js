@@ -489,7 +489,7 @@ export default class AIRaceScene extends Phaser.Scene {
 
             const username = this.registry.get("username");
             if (username) {
-                fetch("http://localhost:5000/update-coins", {
+                fetch("http://escaperealm.onrender.com/update-coins", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, coins: updatedCoins }),
